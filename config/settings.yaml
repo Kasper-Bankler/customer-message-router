@@ -1,0 +1,3 @@
+# Runtime configuration: retrieval and confidence thresholds, model names, latency
+# and cost budgets. Every tunable number lives here, never inline in code.
+# Not yet populated.

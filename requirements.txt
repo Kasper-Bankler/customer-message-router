@@ -1,0 +1,30 @@
+# Pinned to major versions: safe to upgrade within a major, never across one.
+# Python 3.11+
+
+# Typed I/O contracts between every agent
+pydantic>=2.9,<3
+
+# LLM access. Ollama is the only client we ship; the Azure OpenAI path is
+# described in llm.py but not installed, so the prototype has no cloud dependency.
+ollama>=0.3,<1
+
+# Retrieval
+sentence-transformers>=3.0,<6
+chromadb>=0.5,<2
+rank-bm25>=0.2,<1
+
+# Data and evaluation
+datasets>=3.0,<5
+pandas>=2.2,<3
+numpy>=1.26,<3
+scikit-learn>=1.5,<2
+matplotlib>=3.9,<4
+
+# Config
+pyyaml>=6.0,<7
+
+# Demo UI
+streamlit>=1.39,<2
+
+# Tests
+pytest>=8.3,<9
