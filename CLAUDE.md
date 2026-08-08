@@ -4,8 +4,8 @@
 
 A multi-agent system that routes inbound Banking77 customer messages to one of
 four dispositions: an auto-reply grounded in a 30-article FAQ corpus, a proposed
-action, a human handoff, or a single clarifying question. The thesis is *"a
-router that knows when it doesn't know, and proves it"* — abstention is the
+action, a human handoff, or a single clarifying question. The thesis is _"a
+router that knows when it doesn't know, and proves it"_ — abstention is the
 designed behaviour, not a failure mode, because the FAQ corpus covers only a
 fraction of the 77 intents and the remainder are structurally unanswerable.
 
@@ -56,7 +56,7 @@ code decides what we are allowed to do about it.**
 
 ## Hard rules
 
-- **Never log raw customer text or PII values.** Trace records carry PII *types*
+- **Never log raw customer text or PII values.** Trace records carry PII _types_
   (`["CPR", "PAN"]`) and hashes, never values. `InboundMessage.text` must not
   reach a log sink or an LLM prompt; only `SanitisedMessage.text_redacted`
   travels downstream.
@@ -78,3 +78,33 @@ there. Readability beats cleverness every time. Prefer the obvious
 implementation over the compact one, name things in full, and if a design choice
 is non-obvious, record it in `DECISIONS.md` rather than in a comment. Code that
 cannot be explained out loud in two sentences is a liability here.
+
+## Complexity budget (hard constraint)
+
+This is interview work built by a 3rd-semester BSc student who must
+explain every line under questioning. Simple and explainable beats
+clever and impressive.
+
+- Prefer plain Python functions over framework abstractions. Do NOT use
+  LangGraph — wire the pipeline as explicit function calls in graph.py.
+- No decorators, metaclasses, async, or dependency injection unless I
+  ask for it. Standard library over new dependencies.
+- No abstraction introduced for a single use case. Two implementations
+  before an interface, except LLMClient (which has a stated reason).
+- If a solution needs more than ~40 lines, stop and offer me a simpler
+  version alongside it, and say what the simpler one gives up.
+- Comment WHY, not WHAT. Every non-obvious threshold or constant needs a
+  one-line comment explaining how it was chosen.
+- At the end of each session, explain what you wrote in plain language
+  as if to someone who has not seen the code. If that explanation is
+  hard to give, the code is too complex — simplify it.
+
+## Session close protocol
+
+At the end of every session:
+
+1. Walk me through what you wrote, file by file, in plain language.
+2. Log only genuine judgment calls in DECISIONS.md — not routine choices.
+3. List anything you're unsure about, capped at 3 items. If there are
+   more, you built too much in one session.
+4. Do not commit. I review and commit myself.

@@ -27,6 +27,14 @@ Last reviewed: 2026-08-08.
    pipeline — this is a real production gap, not a solved problem, because
    Danish retrieval quality and CPR-number formats are untested here.
 
+   *Known limitation, stated deliberately:* detection uses `langdetect`, which is
+   unreliable on very short strings — and Banking77 messages are short. I chose
+   to measure that failure rate in the adversarial suite rather than reach for a
+   heavier detector, because at this scope an honest, quantified limitation is
+   worth more than a marginally better number. In production this would be a
+   dedicated service with a confidence threshold, and low-confidence detection
+   would itself be a reason to route to a human.
+
 ## Business rules
 
 5. **Any fraud or unauthorised-transaction signal goes to a human, always**,

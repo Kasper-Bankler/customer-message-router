@@ -16,7 +16,7 @@ Requires Python 3.11+ and [Ollama](https://ollama.com) running locally.
 ```bash
 git clone <this-repo> && cd danske-bank-routing
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .                    # installs dependencies and puts src/ on the path
 
 ollama pull qwen2.5:7b-instruct     # the local model; nothing leaves the machine
 python -m src.retrieval.index       # embed the 30 FAQ articles into ChromaDB
@@ -28,22 +28,10 @@ Route a single message and print the decision:
 python -m src.cli "How long does an international transfer take?"
 ```
 
-```jsonc
-{
-  "message_id": "...",
-  "trace_id": "...",
-  "domain": "fx_international",
-  "intent": "transfer_timing",
-  "disposition": "auto_reply",
-  "risk_tier": "low",
-  "confidence": 0.87,
-  "reply_text": "...",
-  "citations": [{ "doc_id": "doc_028", "title": "...", "relevance": 0.71 }],
-  "grounded": true,
-  "guardrails_triggered": [],
-  "latency_ms": 1840
-}
-```
+The output is a `RoutingDecision`: disposition, risk tier, confidence, the FAQ
+articles cited, which guardrails fired, latency and token cost. A real example
+goes here once the pipeline runs end to end — it is deliberately left out rather
+than filled in with plausible-looking numbers.
 
 Optional UI:
 
@@ -57,6 +45,7 @@ streamlit run app/streamlit_app.py
 python eval/build_goldset.py        # sample ~100 messages for hand-labelling
 python eval/run_eval.py             # metrics + confusion matrices + bootstrap CIs
 python eval/adversarial.py          # injection and edge-case suite
+pytest                              # unit tests for guardrails and policy matrix
 ```
 
 Results land in `eval/results/`. Every number quoted in the presentation is

@@ -154,6 +154,10 @@ class Escalation(BaseModel):
     summary: str = Field(
         description="Three-line brief for the agent, derived from redacted text only. Must contain no PII values."
     )
+    suggested_reply: str | None = Field(
+        default=None,
+        description="Draft reply for the human agent to edit and send. Never reaches the customer without a human.",
+    )
 
 
 class TokenCost(BaseModel):
@@ -181,6 +185,10 @@ class RoutingDecision(BaseModel):
     reply_text: str | None = Field(
         default=None,
         description="Customer-facing reply including the AI disclosure line. None unless disposition is AUTO_REPLY.",
+    )
+    clarifying_question: str | None = Field(
+        default=None,
+        description="The single question to put back to the customer. Set only when disposition is CLARIFY.",
     )
     citations: list[Citation] = Field(
         default_factory=list, description="FAQ articles grounding reply_text. Empty means ungrounded."
