@@ -1,0 +1,142 @@
+ID,Title,Content
+doc_001,How do I block my credit card if it is lost or stolen?,"If your credit card is lost or stolen, you should block it immediately to prevent misuse.
+You can block your card via:
+- The mobile banking app under ""Cards"" > ""Block card""
+- Online banking by going to “Card services”
+- Our 24/7 emergency hotline at +45 70 20 70 20
+
+After blocking the card, you can order a replacement directly through the app or receive guidance from customer support."
+doc_002,What is the maximum amount I can transfer via mobile banking?,"You can transfer up to DKK 500,000 per day through the mobile banking app.
+For larger amounts, please use the desktop version of online banking, where the limit is DKK 1,000,000 per day.
+
+If you need to transfer more than this, contact your advisor or the customer service hotline."
+doc_003,How do I open a savings account?,"To open a savings account, log in to your online or mobile banking and navigate to ""Accounts"" > ""Open new account.""
+You can choose between:
+- Standard Savings Account
+- High-Interest Savings (requires minimum balance of DKK 25,000)
+
+It typically takes 1–2 business days for the account to be active."
+doc_004,How do I update my address or contact information?,"You can update your address, phone number, or email directly through:
+- Mobile banking app under ""Profile"" > ""Personal details""
+- Online banking under “Settings”
+
+Changes are typically updated immediately. For legal address changes, we automatically sync with the national registry."
+doc_005,How do I apply for a mortgage loan?,"To apply for a mortgage:
+1. Log in to online banking and choose “Loans” > “Apply for mortgage”
+2. Fill out the digital application form with your income and property details
+3. Upload necessary documents (salary slips, purchase agreement, etc.)
+
+You will be contacted by a mortgage advisor within 2–3 business days."
+doc_006,Can I get a loan pre-approval before buying a home?,"Yes, we offer mortgage pre-approval so you know your buying range in advance.
+Apply through online banking or contact your advisor. You will need to provide documentation of your income, expenses, and any existing loans.
+
+Pre-approvals are typically valid for 3 months."
+doc_007,What should I do if I forgot my online banking password?,"If you've forgotten your password, you can reset it via the login screen by selecting “Forgot password.”
+You’ll be guided to authenticate with your NemID or MitID.
+If you’re unable to reset online, call our support center at +45 70 13 00 00 for assistance."
+doc_008,How do I receive international transfers?,"To receive international transfers, provide the sender with:
+- Your full name and address
+- Your IBAN (can be found under “Account details” in mobile banking)
+- The bank's SWIFT/BIC code: DABADKKK
+
+Transfers typically take 1–3 business days depending on the sending country."
+doc_009,How can I change the limit on my credit card?,"To request a change in your credit card limit:
+- Go to “Cards” > “Card settings” > “Limit settings” in mobile or online banking
+- Choose your new desired limit
+- Confirm using MitID
+
+Approval is typically instant but may take up to 24 hours."
+doc_010,What fees apply for using my card abroad?,"When using your card abroad:
+- Currency exchange fee: 1.5% of the transaction amount
+- ATM withdrawals: Up to DKK 30 per withdrawal depending on card type
+
+Use the mobile app to see fee details for your specific card. You can also temporarily increase your card limit for travel."
+doc_011,How do I activate my new debit card?,"To activate your new debit card:
+- Log in to the mobile banking app
+- Go to “Cards” > “Activate card”
+- Enter the last 4 digits of your card
+
+You can also activate your card by making a purchase using your PIN."
+doc_012,What is the difference between a fixed-rate and variable-rate loan?,"- A fixed-rate loan locks your interest rate for the full term, providing stability in monthly payments
+- A variable-rate loan can change over time, often starting with a lower rate but increasing based on market conditions
+
+Discuss your risk tolerance with your advisor to choose the right loan type."
+doc_013,Can I cancel a payment I’ve already made?,"If the payment hasn’t been processed yet, you may cancel it via:
+- “Payments” > “Pending transactions” in the app or online banking
+If it’s already processed, contact the recipient directly or call support to request a reversal."
+doc_014,How do I order a new MitID code app or card?,"You can order a new MitID authenticator through:
+- www.mitid.dk
+- MitID app under “Manage devices”
+
+You may need to verify your identity using your passport or NemID if it’s your first request."
+doc_015,How do I add an authorized user to my account?,"To authorize another person (e.g. spouse or accountant):
+- Submit a power of attorney form online or at your local branch
+- Verification of the other person's identity is required
+
+Access can be limited to read-only or full transactional authority."
+doc_016,What are the interest rates on personal loans?,"Interest rates for personal loans depend on your credit profile, income, and loan amount.
+Typical APRs range from 5.5% to 14.9%.
+Use our loan calculator or speak to a loan advisor to get a personalized rate."
+doc_017,How do I receive e-Boks or digital mail notifications?,"To enable notifications:
+- Log in to e-Boks or the mobile banking app
+- Navigate to “Settings” > “Notifications”
+- Choose SMS, email, or push notification preferences
+
+Ensure your contact info is up to date."
+doc_018,What should I do if my mobile phone with the banking app is stolen?,"Immediately call support to block mobile banking access.
+You can also log in from another device and remove the lost phone under ""Manage devices.""
+
+For extra security, reset your MitID credentials."
+doc_019,How can I set up recurring payments or standing orders?,"To create a standing order:
+- Go to “Payments” > “Recurring” in the app or online
+- Enter the recipient, amount, frequency, and start date
+
+You can pause or edit the order anytime."
+doc_020,Can I open a youth or junior account for my child?,"Yes. Children under 18 can have youth accounts with parental approval.
+Open via online banking or at a branch. You’ll need to bring:
+- Child’s CPR number and ID
+- Parental ID
+
+Youth accounts have no monthly fees and come with limited card access."
+doc_021,What is two-factor authentication (2FA)?,"2FA adds an extra layer of security by requiring:
+1. Something you know (e.g., password)
+2. Something you have (e.g., MitID app)
+
+This helps protect your accounts even if your password is compromised."
+doc_022,Can I use Apple Pay or Google Pay with my card?,"Yes, our debit and credit cards support Apple Pay and Google Pay.
+To activate:
+- Open your wallet app
+- Add your card manually or via mobile banking
+- Authenticate with MitID
+
+Digital wallets are accepted wherever contactless is enabled."
+doc_023,What happens if my loan payment is delayed?,"Missing a loan payment may result in:
+- Late fees
+- Impact on your credit score
+- Default risk
+
+If you're facing financial difficulties, contact us early to arrange a payment plan."
+doc_024,How can I export my account statements?,"In mobile or online banking, go to:
+- “Accounts” > Select account > “Statements”
+You can download in PDF or CSV format.
+Statements are archived for up to 10 years."
+doc_025,Can I access my accounts when traveling abroad?,"Yes. You can access mobile and online banking from anywhere.
+Ensure international roaming is enabled for SMS authentication.
+For high-risk countries, temporary restrictions may apply—check our travel advisory."
+doc_026,How do I report unauthorized transactions?,"Report immediately via:
+- Mobile banking: “Cards” > “Dispute transaction”
+- Support hotline: +45 70 13 00 00
+
+You may need to sign a dispute form. Most cases are resolved within 10 working days."
+doc_027,How do I change my PIN code?,"Use any ATM that supports PIN changes or go to:
+- Mobile app: “Cards” > “PIN settings” > “Change PIN”
+
+PIN changes are effective immediately."
+doc_028,What is the processing time for international transfers?,"Transfers to EU countries usually take 1–2 business days.
+Transfers outside the EU may take 3–5 business days, depending on currency and recipient bank."
+doc_029,Can I get a debit card without a credit feature?,"Yes. Debit-only cards are available for customers who prefer not to have credit facilities.
+These cards deduct funds directly from your current account and have daily limits."
+doc_030,What is the difference between IBAN and SWIFT?,"- IBAN identifies your specific account (used across Europe)
+- SWIFT/BIC identifies the bank (used globally)
+
+Both are needed for international transfers."
