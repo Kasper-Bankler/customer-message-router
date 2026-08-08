@@ -18,9 +18,9 @@ accuracy number.
 
 ## Architecture
 
-Six stages, wired as an explicit Python state machine in `src/graph.py`:
+Six stages, wired as plain function calls in `src/pipeline.py`:
 
-1. **Ingress / sanitiser** (`guardrails/ingress.py`) — language detect, PII
+1. **Ingress / sanitiser** (`ingress.py`) — language detect, PII
    detect and redact (CPR, PAN via Luhn, IBAN), prompt-injection scan, abuse and
    vulnerability flags. Emits `SanitisedMessage`.
 2. **Intent resolver** (`agents/intent_resolver.py`) — Stage A: embedding kNN
@@ -31,17 +31,31 @@ Six stages, wired as an explicit Python state machine in `src/graph.py`:
 3. **Orchestrator** (`agents/orchestrator.py`) — intent to domain, then a
    **policy matrix in code** to a disposition, with confidence thresholds and
    deterministic overrides.
-4. **One of three agents** — RAG (hybrid retrieve, ground, cite, abstain),
-   action (schema-validated, dry-run only, needs approval), or handoff
-   (summarise, queue, priority, SLA).
-5. **Verifier / egress guard** (`guardrails/egress.py`) — groundedness, citation
+4. **One of three agents** — RAG (`agents/rag_agent.py`, hybrid retrieve,
+   ground, cite, abstain), action (`tools.py`, schema-validated, dry-run only,
+   needs approval), or handoff (`agents/handoff_agent.py`, summarise, queue,
+   priority, SLA).
+5. **Verifier / egress guard** (`egress.py`) — groundedness, citation
    validity, no invented contact details, no-advice check, AI disclosure
    appended. Returns PASS, REWRITE or ESCALATE.
-6. **Observability** (`observability/trace.py`) — cross-cutting `trace_id`,
+6. **Observability** (`trace.py`) — cross-cutting `trace_id`,
    spans, cost, latency, decisions.
 
 The load-bearing idea: **the LLM decides what the customer wants; deterministic
 code decides what we are allowed to do about it.**
+
+## Layout
+
+```
+src/  schemas.py llm.py pipeline.py cli.py ingress.py egress.py
+      retrieval.py tools.py trace.py  agents/{intent_resolver,orchestrator,rag_agent,handoff_agent}.py
+config/  taxonomy.yaml settings.yaml
+eval/  build_goldset.py run_eval.py adversarial.py results/
+```
+
+Flat by default. A directory exists only where there is more than one file and a
+real reason to group them — which is why `agents/` survives and nothing else
+does. Do not create a package for a single module.
 
 ## Conventions
 
@@ -86,7 +100,7 @@ explain every line under questioning. Simple and explainable beats
 clever and impressive.
 
 - Prefer plain Python functions over framework abstractions. Do NOT use
-  LangGraph — wire the pipeline as explicit function calls in graph.py.
+  LangGraph — wire the pipeline as explicit function calls in pipeline.py.
 - No decorators, metaclasses, async, or dependency injection unless I
   ask for it. Standard library over new dependencies.
 - No abstraction introduced for a single use case. Two implementations

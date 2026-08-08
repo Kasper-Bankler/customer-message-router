@@ -19,7 +19,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e .                    # installs dependencies and puts src/ on the path
 
 ollama pull qwen2.5:7b-instruct     # the local model; nothing leaves the machine
-python -m src.retrieval.index       # embed the 30 FAQ articles into ChromaDB
+python -m src.retrieval             # embed the 30 FAQ articles into ChromaDB
 ```
 
 Route a single message and print the decision:
@@ -66,16 +66,24 @@ Each one proves something different:
 ## Layout
 
 ```
-config/      taxonomy.yaml (77 intents -> domain, disposition, risk, SLA), settings.yaml
-src/         schemas.py, llm.py, graph.py, cli.py
-  guardrails/  ingress (PII, injection, language) and egress (groundedness, no-advice)
-  retrieval/   ChromaDB index over unchunked FAQ articles, BM25 + dense hybrid
-  agents/      intent_resolver, orchestrator (policy matrix), rag, action, handoff
-  tools/       registry of stubbed, dry-run-only tools
-  observability/ trace_id, spans, JSONL sink
-eval/        gold set, metrics, adversarial suite, results/
-app/         Streamlit demo
+config/   taxonomy.yaml (77 intents -> domain, disposition, risk, SLA), settings.yaml
+src/
+  schemas.py    every Pydantic contract; the file to read first
+  pipeline.py   the six stages wired as plain function calls
+  cli.py        demo entry point
+  llm.py        LLMClient interface; the only place a provider SDK is touched
+  ingress.py    PII redaction, injection screen, language detection
+  egress.py     groundedness, citations, invented-specifics, no-advice
+  retrieval.py  ChromaDB index over unchunked FAQ articles + BM25 hybrid
+  tools.py      tool registry and the action agent; dry-run only
+  trace.py      trace_id, spans, JSONL sink
+  agents/       intent_resolver, orchestrator (policy matrix), rag_agent, handoff_agent
+eval/     gold set, metrics, adversarial suite, results/
+app/      Streamlit demo
 ```
+
+The layout is flat on purpose: a directory only exists where there is more than
+one file and a reason to group them. `agents/` is the only one that qualifies.
 
 ## Reading order
 

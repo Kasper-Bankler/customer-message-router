@@ -5,4 +5,7 @@ build/
 .env
 chroma_db/
 .ipynb_checkpoints/
+# Scratch exploration and the built deck: useful locally, not repo deliverables
+notebooks/
+slides/
 .DS_Store

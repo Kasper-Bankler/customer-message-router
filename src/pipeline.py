@@ -1,0 +1,1 @@
+"""Wires the six stages together as plain function calls, no framework: ingress, intent resolution, orchestrator, one agent, egress guard, trace. Explicit control flow is the point, per the complexity budget in CLAUDE.md."""

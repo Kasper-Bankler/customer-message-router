@@ -1,0 +1,1 @@
+"""Tool registry and the action agent: per-tool Pydantic argument schemas, risk and approval metadata, dry-run executors, and the code that turns an intent into a ProposedAction. Proposes, never executes."""

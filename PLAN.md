@@ -150,10 +150,15 @@ When they ask "why not just fine-tune a classifier?", your answer: _"For a fixed
 
 ## 4. Repository structure
 
+Flat by default: a directory exists only where there is more than one file and a
+real reason to group them. `agents/` is the only package that qualifies.
+
 ```
 danske-routing/
 ├── README.md                  ← how to run, 30-second quickstart
 ├── ASSUMPTIONS.md             ← scored deliverable, keep updated
+├── DECISIONS.md               ← judgment calls, with alternatives rejected
+├── pyproject.toml             ← minimal; `pip install -e .` puts src/ on the path
 ├── requirements.txt
 ├── config/
 │   ├── taxonomy.yaml          ← 77 intents → domain, disposition, risk, SLA
@@ -161,36 +166,34 @@ danske-routing/
 ├── src/
 │   ├── schemas.py             ← ALL Pydantic models (write this first)
 │   ├── llm.py                 ← LLMClient interface + Ollama/Azure impls
-│   ├── guardrails/
-│   │   ├── ingress.py         ← PII, injection, language, abuse
-│   │   └── egress.py          ← groundedness, citations, advice check
-│   ├── retrieval/
-│   │   ├── index.py           ← chunk, embed, persist FAQ corpus
-│   │   └── hybrid.py          ← BM25 + dense + score fusion
-│   ├── agents/
-│   │   ├── intent_resolver.py
-│   │   ├── orchestrator.py    ← policy matrix lives here
-│   │   ├── rag_agent.py
-│   │   ├── action_agent.py    ← stubbed tools
-│   │   └── handoff_agent.py
-│   ├── tools/
-│   │   └── registry.py        ← tool schemas + dry-run executors
-│   ├── observability/
-│   │   └── trace.py           ← trace_id, spans, JSONL sink
-│   └── graph.py               ← LangGraph wiring
+│   ├── pipeline.py            ← the six stages, wired as plain function calls
+│   ├── cli.py                 ← demo entry point, prints RoutingDecision JSON
+│   ├── ingress.py             ← PII, injection, language, abuse
+│   ├── egress.py              ← groundedness, citations, advice check
+│   ├── retrieval.py           ← embed + persist FAQ corpus, BM25 + dense + RRF
+│   ├── tools.py               ← tool schemas, dry-run executors, action agent
+│   ├── trace.py               ← trace_id, spans, JSONL sink
+│   └── agents/
+│       ├── intent_resolver.py
+│       ├── orchestrator.py    ← policy matrix lives here
+│       ├── rag_agent.py
+│       └── handoff_agent.py
 ├── eval/
 │   ├── build_goldset.py       ← sample + hand-label 100 messages
 │   ├── goldset.csv
 │   ├── run_eval.py            ← metrics + bootstrap CIs
 │   ├── adversarial.py         ← injection / edge-case suite
 │   └── results/
-├── app/
-│   └── streamlit_app.py
-├── notebooks/
-│   └── 01_data_exploration.ipynb
-└── slides/
-    └── presentation.pdf
+├── tests/
+│   ├── test_guardrails.py
+│   └── test_orchestrator.py
+└── app/
+    └── streamlit_app.py
 ```
+
+Two deliberate departures from the stack table in §3: the pipeline is plain
+Python rather than LangGraph, and `notebooks/` and `slides/` are not tracked in
+the repo. Both are recorded in `DECISIONS.md`.
 
 Clean structure is itself a signal — the job ad explicitly lists _"writing clean, maintainable, and well-documented code."_
 
