@@ -1,11 +1,11 @@
-"""FAQ corpus retrieval: embeds and persists the 30 articles in ChromaDB as whole documents (deliberately unchunked), then serves hybrid BM25 + dense queries fused with Reciprocal Rank Fusion."""
+"""Reads the 30-article FAQ corpus from CSV into typed articles. The only module that touches the corpus file; indexing and search build on what it returns."""
 
 from pathlib import Path
 
 import pandas as pd
 from pydantic import BaseModel, Field
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 FAQ_CSV = REPO_ROOT / "data" / "banking_faq_corpus.csv"
 
 

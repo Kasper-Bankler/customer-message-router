@@ -121,4 +121,13 @@ At the end of every session:
 2. Log only genuine judgment calls in DECISIONS.md — not routine choices.
 3. List anything you're unsure about, capped at 3 items. If there are
    more, you built too much in one session.
-4. Do not commit. I review and commit myself.
+4. Produce a verification checklist:
+   - the exact commands to run, in order, copy-pasteable
+   - for each, what correct output looks like — concrete values or
+     shapes, not "it should work"
+   - at least one deliberate failure case I can trigger to prove a
+     check actually fires
+   - which files I should read by hand, and what I'm looking for
+     Mark clearly which commands you have already run and which you have
+     not. Never present untested output as expected output.
+5. Do not commit. I review and commit myself.

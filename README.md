@@ -19,8 +19,17 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e .                    # installs dependencies and puts src/ on the path
 
 ollama pull qwen2.5:7b-instruct     # the local model; nothing leaves the machine
-python -m src.retrieval             # embed the 30 FAQ articles into ChromaDB
+python -m src.retrieval --build     # embed the 30 FAQ articles into ChromaDB
 ```
+
+Inspect retrieval on its own, before anything is built on top of it:
+
+```bash
+python -m src.retrieval "how long does an international transfer take?"
+```
+
+Prints the top 5 with dense score, BM25 rank and fused rank side by side, marking
+the rows where the two retrievers disagree.
 
 Route a single message and print the decision:
 
