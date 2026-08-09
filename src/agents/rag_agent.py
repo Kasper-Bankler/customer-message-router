@@ -45,6 +45,15 @@ class RagDraft(BaseModel):
     )
 
 
+class RetrievedRef(BaseModel):
+    """What retrieval returned, with no article text. Safe to write to a trace sink."""
+
+    doc_id: str = Field(description="Corpus identifier, e.g. 'doc_028'.")
+    dense_score: float = Field(description="Cosine similarity the retrieval gate thresholds on.")
+    rrf_score: float = Field(description="Fused Reciprocal Rank Fusion score.")
+    fused_rank: int = Field(description="1-based rank after fusion.")
+
+
 class RagOutcome(BaseModel):
     """Result of the RAG attempt, including the case where no attempt was made."""
 
@@ -52,6 +61,11 @@ class RagOutcome(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
     sources: list[str] = Field(
         default_factory=list, description="Raw text of every article shown to the model."
+    )
+    retrieved: list[RetrievedRef] = Field(
+        default_factory=list,
+        description="Every article retrieval returned, recorded even when the gate rejected "
+        "them — a trace that only shows what was cited cannot explain an abstention.",
     )
     abstained: bool = Field(description="True when no reply was produced.")
     reason: str | None = Field(default=None, description="Guardrail name when abstained.")
@@ -108,24 +122,38 @@ def retrieve_context(question: str) -> tuple[list[RetrievedArticle], bool]:
     return articles, True
 
 
+def as_refs(articles: list[RetrievedArticle]) -> list[RetrievedRef]:
+    """Scores and identifiers only. The article text stays out of the trace."""
+    return [
+        RetrievedRef(
+            doc_id=article.doc_id,
+            dense_score=round(article.dense_score, 4),
+            rrf_score=round(article.rrf_score, 6),
+            fused_rank=article.fused_rank,
+        )
+        for article in articles
+    ]
+
+
 def generate_reply(question: str, llm: LLMClient) -> tuple[RagOutcome, object]:
     """Run both gates and return either a grounded draft or an honest abstention."""
     articles, passed = retrieve_context(question)
+    refs = as_refs(articles)
     if not passed:
         # No LLM call at all. The cheapest possible answer to an unanswerable
         # question, and it removes an entire class of hallucination.
-        return RagOutcome(abstained=True, reason="retrieval_gate"), None
+        return RagOutcome(abstained=True, reason="retrieval_gate", retrieved=refs), None
 
     draft, cost = llm.complete_structured(build_prompt(question, articles), RagDraft)
     if draft.answer.strip().upper().startswith(INSUFFICIENT_CONTEXT):
-        return RagOutcome(abstained=True, reason="generation_gate"), cost
+        return RagOutcome(abstained=True, reason="generation_gate", retrieved=refs), cost
 
     retrieved_ids = {article.doc_id for article in articles}
     cited = [doc_id for doc_id in draft.cited_doc_ids if doc_id in retrieved_ids]
     if not cited:
         # A grounded answer that cites nothing retrieved is not grounded. This is
         # citation validity, checked here because it needs the retrieval result.
-        return RagOutcome(abstained=True, reason="citation_invalid"), cost
+        return RagOutcome(abstained=True, reason="citation_invalid", retrieved=refs), cost
 
     by_id = {article.doc_id: article for article in articles}
     return (
@@ -138,6 +166,7 @@ def generate_reply(question: str, llm: LLMClient) -> tuple[RagOutcome, object]:
             # Every article the model could see, so the egress check verifies against
             # exactly what was in front of it — not just the ones it chose to cite.
             sources=[f"{article.title}\n{article.content}" for article in articles],
+            retrieved=refs,
             abstained=False,
         ),
         cost,

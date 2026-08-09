@@ -63,7 +63,7 @@ Real output, trimmed to the fields that carry the decision:
 `lost_or_stolen_card` already says `human`, so no override had to fire. The
 `fraud_override` backstop only appears when policy has to correct something.
 
-Optional UI:
+Demo UI, with the five demo messages as one-click presets:
 
 ```bash
 streamlit run app/streamlit_app.py

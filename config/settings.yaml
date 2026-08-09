@@ -37,6 +37,12 @@ orchestrator:
   out_of_taxonomy_risk: medium
   out_of_taxonomy_sla_minutes: 120
 
+observability:
+  enabled: true
+  # One JSONL line per message, appended. Gitignored: traces are runtime artefacts,
+  # and even PII-free ones are operational data rather than repository content.
+  trace_path: traces/trace.jsonl
+
 rag:
   # The retrieval gate. Thresholds the top-1 article's DENSE COSINE, not the fused
   # RRF score: RRF encodes rank agreement, not relevance, so a document both
