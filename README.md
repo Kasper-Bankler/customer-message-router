@@ -6,10 +6,10 @@ the FAQ corpus cannot answer the question.
 
 > **A router that knows when it doesn't know, and proves it.**
 
-**Status:** routing works end to end. Contracts, the 77-row taxonomy, hybrid
-retrieval, two-stage intent resolution, the policy matrix and the ingress
-guardrails are implemented. The RAG agent and egress verifier are still
-placeholders, so `reply_text` is a stub — retrieval is not yet wired into a reply.
+**Status:** the full path works end to end — ingress guardrails, two-stage intent
+resolution, the policy matrix, grounded replies behind two abstention gates, the
+deterministic output guard, dry-run tool proposals and human handoff. Remaining:
+the evaluation harness (`eval/`) and the Streamlit UI.
 
 ## Quickstart
 

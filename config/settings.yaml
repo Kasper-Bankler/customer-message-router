@@ -37,6 +37,26 @@ orchestrator:
   out_of_taxonomy_risk: medium
   out_of_taxonomy_sla_minutes: 120
 
+rag:
+  # The retrieval gate. Thresholds the top-1 article's DENSE COSINE, not the fused
+  # RRF score: RRF encodes rank agreement, not relevance, so a document both
+  # retrievers rank first scores the maximum even when it is merely the least-bad
+  # of thirty. Measured: a perfect match scores 0.0328 and a known-ungrounded query
+  # scores 0.0325, which no threshold can separate. See DECISIONS.md.
+  #
+  # 0.72 chosen on 24 real Banking77 test messages across 12 intents with known FAQ
+  # coverage: uncovered intents topped out at 0.7163 and covered ones resumed at
+  # 0.7687. PROVISIONAL — n=24 and the distributions overlap below that band. The
+  # Day 5 sweep replaces it. Precision-first, per assumption 8.
+  retrieval_threshold: 0.72
+  # Articles passed to the model as context. Three keeps the prompt short enough
+  # that the model cannot quietly answer from a fourth, weakly-related article.
+  max_context_articles: 3
+  # EU AI Act Article 50: customers must be told they are dealing with an AI.
+  # Deliberately contains no phone number — every specific in a reply has to be
+  # traceable to a source article, and this line has no source.
+  disclosure: "This answer was generated automatically. Ask at any time to be put through to a person."
+
 ingress:
   # Each matched injection pattern contributes this much. One clear hit
   # ("ignore previous instructions") reaches the block threshold on its own,

@@ -1,38 +1,36 @@
 """Wires the six stages together as plain function calls, no framework: ingress, intent resolution, orchestrator, one agent, egress guard, trace. Explicit control flow is the point, per the complexity budget in CLAUDE.md.
 
-Session 3 wires stages 1-3 and stubs the rest. Reading this file top to bottom
-tells you the whole control flow, which is the property a framework would take away.
+Reading this file top to bottom tells you the whole control flow, which is the
+property a framework would take away. Every stage is wrapped: any exception routes
+to HUMAN with the failing stage named in `guardrails_triggered`. A router that
+drops messages or guesses when a component fails is worse than one that queues them.
 """
 
 import time
 import uuid
 
+from src.agents.handoff_agent import build_escalation
 from src.agents.intent_resolver import resolve_intent
-from src.agents.orchestrator import build_escalation, decide_disposition
+from src.agents.orchestrator import DispositionOutcome, decide_disposition
+from src.agents.rag_agent import RagOutcome, generate_reply
+from src.egress import verify_reply
 from src.ingress import sanitise
 from src.llm import LLMClient, OllamaClient
 from src.schemas import (
     Disposition,
     Escalation,
     InboundMessage,
+    IntentResult,
     RiskTier,
     RoutingDecision,
     SanitisedMessage,
     TokenCost,
 )
-
-
-def stub_reply(intent: str | None) -> str:
-    """Stands in for the RAG agent until Session 4. Never shown to a customer."""
-    return f"[STUB REPLY — no RAG yet. Intent resolved as {intent!r}.]"
+from src.tools import propose_action
 
 
 def route_message(text: str, llm: LLMClient | None = None) -> RoutingDecision:
-    """One customer message in, one RoutingDecision out.
-
-    Any exception from any stage routes to HUMAN. A router that drops messages or
-    guesses when a component fails is worse than one that queues them.
-    """
+    """One customer message in, one RoutingDecision out."""
     started = time.perf_counter()
     llm = llm or OllamaClient()
     inbound = InboundMessage(message_id=str(uuid.uuid4()), text=text)
@@ -40,19 +38,22 @@ def route_message(text: str, llm: LLMClient | None = None) -> RoutingDecision:
 
     try:
         sanitised = sanitise(inbound)
+    except Exception as error:  # noqa: BLE001 — fail closed is the whole point
+        return _failed_closed(inbound, trace_id, error, started, "ingress")
 
-        # Two ingress verdicts short-circuit before any LLM call. Distress first:
-        # a person in crisis reaches a trained human without waiting on a model
-        # that might classify their message as a routine balance query.
-        if sanitised.vulnerability_flags:
-            return _ingress_escalation(sanitised, trace_id, started, reason="vulnerability_detected")
-        if sanitised.blocked:
-            return _ingress_escalation(sanitised, trace_id, started, reason=sanitised.block_reason)
+    # Two ingress verdicts short-circuit before any LLM call. Distress first: a
+    # person in crisis reaches a trained human without waiting on a model that
+    # might classify their message as a routine balance query.
+    if sanitised.vulnerability_flags:
+        return _ingress_escalation(sanitised, trace_id, started, "vulnerability_detected")
+    if sanitised.blocked:
+        return _ingress_escalation(sanitised, trace_id, started, sanitised.block_reason)
 
+    try:
         intent_result, cost = resolve_intent(sanitised, llm)
         outcome = decide_disposition(intent_result)
-    except Exception as error:  # noqa: BLE001 — fail closed is the whole point
-        return _failed_closed(inbound, trace_id, error, started)
+    except Exception as error:  # noqa: BLE001
+        return _failed_closed(inbound, trace_id, error, started, "intent_resolution")
 
     decision = RoutingDecision(
         message_id=inbound.message_id,
@@ -66,16 +67,95 @@ def route_message(text: str, llm: LLMClient | None = None) -> RoutingDecision:
         # runs on, not only the ones that escalate.
         guardrails_triggered=(["pii_redacted"] if sanitised.pii_found else [])
         + outcome.guardrails_triggered,
-        latency_ms=_elapsed_ms(started),
         token_cost=cost,
+        latency_ms=_elapsed_ms(started),
     )
 
-    if outcome.disposition is Disposition.HUMAN:
-        decision.escalation = build_escalation(intent_result, outcome)
-    elif outcome.disposition is Disposition.AUTO_REPLY:
-        decision.reply_text = stub_reply(intent_result.intent)
+    try:
+        _apply_disposition(decision, sanitised, intent_result, outcome, llm)
+    except Exception as error:  # noqa: BLE001
+        return _failed_closed(inbound, trace_id, error, started, "agent")
 
+    decision.latency_ms = _elapsed_ms(started)
     return decision
+
+
+def _apply_disposition(
+    decision: RoutingDecision,
+    sanitised: SanitisedMessage,
+    intent_result: IntentResult,
+    outcome: DispositionOutcome,
+    llm: LLMClient,
+) -> None:
+    """Run the one agent this disposition calls for, mutating `decision` in place."""
+    if outcome.disposition is Disposition.AUTO_REPLY:
+        _run_rag(decision, sanitised, intent_result, outcome, llm)
+    elif outcome.disposition is Disposition.ACTION:
+        decision.proposed_action = propose_action(intent_result.intent or "")
+        if decision.proposed_action is None:
+            # The taxonomy authorised an action but no tool is registered for this
+            # intent. Inventing one is not an option, so a human takes it.
+            _downgrade_to_human(decision, intent_result, outcome, "no_tool_registered")
+    elif outcome.disposition is Disposition.HUMAN:
+        decision.escalation = build_escalation(intent_result, outcome)
+
+
+def _run_rag(
+    decision: RoutingDecision,
+    sanitised: SanitisedMessage,
+    intent_result: IntentResult,
+    outcome: DispositionOutcome,
+    llm: LLMClient,
+) -> None:
+    """Generate a grounded reply, or downgrade to HUMAN at whichever gate stopped it."""
+    result, cost = generate_reply(sanitised.text_redacted, llm)
+    if cost is not None:
+        decision.token_cost = _add_cost(decision.token_cost, cost)
+
+    if result.abstained or result.reply_text is None:
+        # grounded stays None: no reply was generated, which is not the same as a
+        # reply that was generated and failed.
+        _downgrade_to_human(decision, intent_result, outcome, result.reason or "rag_abstained")
+        return
+
+    verdict = verify_reply(result.reply_text, result.sources)
+    if not verdict.passed:
+        decision.grounded = False
+        _downgrade_to_human(
+            decision, intent_result, outcome, "invented_specifics", suggested_reply=result.reply_text
+        )
+        decision.guardrails_triggered += [f"invented_{category}" for category in verdict.invented]
+        return
+
+    decision.reply_text = result.reply_text
+    decision.citations = result.citations
+    decision.grounded = True
+
+
+def _downgrade_to_human(
+    decision: RoutingDecision,
+    intent_result: IntentResult,
+    outcome: DispositionOutcome,
+    reason: str,
+    suggested_reply: str | None = None,
+) -> None:
+    """Move a decision into the human lane after an agent declined to answer."""
+    decision.disposition = Disposition.HUMAN
+    decision.reply_text = None
+    decision.citations = []
+    decision.guardrails_triggered = decision.guardrails_triggered + [reason]
+    downgraded = outcome.model_copy(
+        update={"guardrails_triggered": outcome.guardrails_triggered + [reason]}
+    )
+    decision.escalation = build_escalation(intent_result, downgraded, suggested_reply)
+
+
+def _add_cost(left: TokenCost, right: TokenCost) -> TokenCost:
+    return TokenCost(
+        prompt_tokens=left.prompt_tokens + right.prompt_tokens,
+        completion_tokens=left.completion_tokens + right.completion_tokens,
+        usd=left.usd + right.usd,
+    )
 
 
 def _ingress_escalation(
@@ -120,9 +200,9 @@ def _ingress_escalation(
 
 
 def _failed_closed(
-    inbound: InboundMessage, trace_id: str, error: Exception, started: float
+    inbound: InboundMessage, trace_id: str, error: Exception, started: float, stage: str
 ) -> RoutingDecision:
-    """Build the HUMAN decision used when any stage raises."""
+    """Build the HUMAN decision used when a stage raises, naming the stage that failed."""
     return RoutingDecision(
         message_id=inbound.message_id,
         trace_id=trace_id,
@@ -133,7 +213,7 @@ def _failed_closed(
         confidence=0.0,
         # The exception type, never its message: a traceback can carry the raw text
         # that triggered it, and that text may contain PII.
-        guardrails_triggered=["pipeline_error", type(error).__name__],
+        guardrails_triggered=[f"{stage}_failed", type(error).__name__],
         latency_ms=_elapsed_ms(started),
         token_cost=TokenCost(),
     )

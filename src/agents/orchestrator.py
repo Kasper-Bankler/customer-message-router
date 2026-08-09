@@ -16,7 +16,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, Field
 
-from src.schemas import Disposition, Escalation, IntentResult, RiskTier
+from src.schemas import Disposition, IntentResult, RiskTier
 from src.taxonomy import TAXONOMY, Domain
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -26,15 +26,6 @@ _settings = yaml.safe_load(SETTINGS_YAML.read_text(encoding="utf-8"))["orchestra
 MIN_CONFIDENCE: float = _settings["min_confidence"]
 OUT_OF_TAXONOMY_RISK = RiskTier(_settings["out_of_taxonomy_risk"])
 OUT_OF_TAXONOMY_SLA: int = _settings["out_of_taxonomy_sla_minutes"]
-
-# Queue priority by risk tier. Assumption 5 requires fraud to be elevated at
-# minimum; critical goes further because money may be leaving the account now.
-PRIORITY_BY_RISK: dict[RiskTier, str] = {
-    RiskTier.CRITICAL: "urgent",
-    RiskTier.HIGH: "elevated",
-    RiskTier.MEDIUM: "standard",
-    RiskTier.LOW: "standard",
-}
 
 
 class DispositionOutcome(BaseModel):
@@ -89,22 +80,3 @@ def decide_disposition(result: IntentResult) -> DispositionOutcome:
         guardrails_triggered=triggered,
     )
 
-
-def build_escalation(result: IntentResult, outcome: DispositionOutcome) -> Escalation:
-    """Assemble the handoff payload for the HUMAN lane.
-
-    The summary is built from the resolver's rationale and the routing facts, never
-    from the raw message, so nothing here can carry a PII value into a queue.
-    """
-    return Escalation(
-        # The domain is the queue. A separate queue-name mapping would be a second
-        # place to keep in sync with the taxonomy for no gain at this size.
-        queue=result.domain,
-        priority=PRIORITY_BY_RISK[outcome.risk_tier],
-        sla_minutes=outcome.sla_minutes,
-        summary=(
-            f"Intent: {result.intent or 'unresolved'} (confidence {result.confidence:.2f}).\n"
-            f"Domain: {result.domain}, risk {outcome.risk_tier.value}.\n"
-            f"Routed to a human because: {', '.join(outcome.guardrails_triggered) or 'taxonomy policy'}."
-        ),
-    )
