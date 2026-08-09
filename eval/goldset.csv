@@ -1,0 +1,81 @@
+message_id,text,true_intent,true_domain,disposition
+gold_0493,Could I open an account for my children?,age_limit,account_servicing,auto_reply
+gold_0509,What are the age requirements for opening an account?,age_limit,account_servicing,auto_reply
+gold_2139,I would like to change my pin.,change_pin,account_servicing,auto_reply
+gold_1133,I need to change my account details,edit_personal_details,account_servicing,action
+gold_1131,Where can I go to modify my detail?,edit_personal_details,account_servicing,auto_reply
+gold_1529,I can't recall my passcode and need to reset it.,passcode_forgotten,account_servicing,auto_reply
+gold_1544,What steps do I take to receive another passcode?,passcode_forgotten,account_servicing,auto_reply
+gold_2872,How do I use my new card?,activate_my_card,cards_issuing,auto_reply
+gold_2847,"I received my new card, how is it activated?",activate_my_card,cards_issuing,auto_reply
+gold_2963,Can I add money with Apple Pay?,apple_pay_or_google_pay,cards_issuing,human
+gold_2994,How do I get the Top Up feature on my apple watch working?,apple_pay_or_google_pay,cards_issuing,human
+gold_2773,Does it cost extra to exchange currencies?,exchange_charge,fx_international,auto_reply
+gold_2760,Is there an exchange fee?,exchange_charge,fx_international,auto_reply
+gold_2567,I attempted to get money using a foreign currency at an ATM but the rate was highly inaccurate!,wrong_exchange_rate_for_cash_withdrawal,fx_international,human
+gold_0686,"I need to cancel my recent transfer immediately, I made a mistake there, please help quickly before it goes through",cancel_transfer,payments_transfers,human
+gold_0694,"This is URGENT, I typed the wrong payment information for a payment I needed to make and have clicked send, I need to reverse the transaction immediately.",cancel_transfer,payments_transfers,human
+gold_2912,I was charged for a cash withdrawal.,cash_withdrawal_charge,payments_transfers,human
+gold_2883,What is this charge on my account for a cash withdrawl?,cash_withdrawal_charge,payments_transfers,human
+gold_1615,How long does an item I bought show as pending?,pending_card_payment,payments_transfers,human
+gold_0233,Why does it say pending cash withdrawal on my statement?,pending_cash_withdrawal,payments_transfers,human
+gold_0200,My withdrawl is still pending.  Why?,pending_cash_withdrawal,payments_transfers,human
+gold_1865,Pending transfer?,pending_transfer,payments_transfers,clarify
+gold_2087,"Hello, My money went through for my purchase but now I got contacted from the seller noting that they didn't receive it. Then the money was returned to my account and I'm not sure why this occurred. So if you can resolve this issue please.",reverted_card_payment?,payments_transfers,human
+gold_2084,Why was my payment cancelled?,reverted_card_payment?,payments_transfers,human
+gold_0867,I made a transaction and it is taking a very long time to go through.,transfer_not_received_by_recipient,payments_transfers,human
+gold_0869,How long will it take for my transaction to be completed?,transfer_not_received_by_recipient,payments_transfers,human
+gold_2051,When will a transfer reach my account?,transfer_timing,payments_transfers,clarify
+gold_2059,How many days does a transfer from the US take?,transfer_timing,payments_transfers,auto_reply
+gold_2686,The amount of time that transfers usually take from a UK account is what?I just completed a transfer and it is not showing up at all. I'm wondering at this point if everything is actually okay.,balance_not_updated_after_bank_transfer,topup_balance,auto_reply
+gold_2695,"After the transfer, the balance did not update.",balance_not_updated_after_bank_transfer,topup_balance,human
+gold_1450,Help me locate the nearest ATM.,atm_support,cards_issuing,human
+gold_0061,I've received my card so now I need to know how to sync it to the app.,card_linking,cards_issuing,auto_reply
+gold_1271,When do I receive my PIN,get_physical_card,cards_issuing,human
+gold_0886,I only own one other credit card from the USA. Will it be accepted?,supported_cards_and_currencies,cards_issuing,human
+gold_0093,Is it a good time to exchange?,exchange_rate,fx_international,human
+gold_0421,If I need GBP instead of AUD what do I do?,exchange_via_app,fx_international,human
+gold_2235,I transferred money and was charged and want to know why.,transfer_fee_charged,fx_international,human
+gold_0801,I was charged a fee after using my card and I shouldn't have been.,card_payment_fee_charged,payments_transfers,human
+gold_2334,What are the steps I follow to transfer money into my account?,transfer_into_account,payments_transfers,human
+gold_2830,Any fee for topping up?,top_up_by_card_charge,topup_balance,human
+gold_1103,What should I do to get transactions off of my account if I didn't make them?  My card must have been compromised and I need to freeze it asap!,card_payment_not_recognised,security_fraud,human
+gold_1100,"Please put a freeze on my card,  I am worried there has been some payments on it and I don't know what for.",card_payment_not_recognised,security_fraud,human
+gold_2753,I didn't take out money from an ATM but my app statement shows that I did. How can I fix this?,cash_withdrawal_not_recognised,security_fraud,human
+gold_2755,Cash I didn't get shows in my app.,cash_withdrawal_not_recognised,security_fraud,human
+gold_2723,"I didn't get cash from an ATM, but the app says I did",cash_withdrawal_not_recognised,security_fraud,human
+gold_1416,Can I use app to freeze account and dispute fraud?,compromised_card,security_fraud,human
+gold_1432,"There are a few transaction that I don't recognize, I think someone managed to get my card details and use it.",compromised_card,security_fraud,human
+gold_1425,How do I freeze my account?,compromised_card,security_fraud,human
+gold_1482,I have a strange direct debit in my statement,direct_debit_payment_not_recognised,security_fraud,human
+gold_1503,why does the app show a direct debit payment that I did not authorize,direct_debit_payment_not_recognised,security_fraud,human
+gold_1509,There's a direct debit on my account that I didn't authorize,direct_debit_payment_not_recognised,security_fraud,human
+gold_0458,What should I do if I lost my card?,lost_or_stolen_card,security_fraud,human
+gold_0468,My card got lost.,lost_or_stolen_card,security_fraud,human
+gold_0440,"My entire gym bag, including my wallet, was stolen out of my locker today. Everything in my wallet is gone - how do I block the card to make it can't be used?",lost_or_stolen_card,security_fraud,human
+gold_1652,My phone was stolen so I no longer have access to the app.,lost_or_stolen_phone,security_fraud,human
+gold_1644,"If I was mugged and lost everything, how do I access my account and app?",lost_or_stolen_phone,security_fraud,human
+gold_1648,Can I used my card even if my phone has been stolen?,lost_or_stolen_phone,security_fraud,human
+gold_1225,What do i need to verify my id?,unable_to_verify_identity,security_fraud,human
+gold_1201,I do not have what is required to prove my identity,unable_to_verify_identity,security_fraud,human
+gold_1230,How long will it take for my ID to verify?,unable_to_verify_identity,security_fraud,human
+gold_1894,"This company is bad, please delete my account.",terminate_account,account_servicing,human
+gold_3002,"I need to verify my identity, but how do I do that?",verify_my_identity,account_servicing,human
+gold_2028,Where has my available money come from?,verify_source_of_funds,account_servicing,human
+gold_1175,I don't like that I have to fill out so much information about my identity.,why_verify_identity,account_servicing,human
+gold_0007,i have not received my card,card_arrival,cards_issuing,human
+gold_2620,I would like to create a disposable virtual card. How do I go about doing that?,get_disposable_virtual_card,cards_issuing,action
+gold_2424,I need a few more physical cards.,getting_spare_card,cards_issuing,action
+gold_2524,Why did the disposable virtual card which I used to pay a gym subscription get denied?,virtual_card_not_working,cards_issuing,human
+gold_3055,Is it possible to get a card if I'm not in the UK?,country_support,fx_international,human
+gold_2160,I've tried numerous times to submit a transfer of funds. Why isn't it going through?,beneficiary_not_allowed,payments_transfers,human
+gold_1588,Why can't I get cash?,declined_cash_withdrawal,payments_transfers,human
+gold_0171,Can you tell me why I noticed a $1 charge on my statement?,extra_charge_on_statement,payments_transfers,human
+gold_2306,"Hi, I'm buying a flat and I'm trying to get my mortgage to go though. Every time I check I simply get an error message. Is there any way you can help me get this money transferred over. Thanks!",failed_transfer,payments_transfers,human
+gold_1718,I want to get an item refunded,request_refund,payments_transfers,human
+gold_1983,Please check payments on my card. There is a duplicate and I only bought it once.,transaction_charged_twice,payments_transfers,human
+gold_0354,Can you explain where I can find the auto-top option?,automatic_top_up,topup_balance,human
+gold_0652,My top up is pending.,pending_top_up,topup_balance,human
+gold_1003,"My top-up showed as complete, but it's no longer there! What's going on here?",top_up_reverted,topup_balance,human
+gold_1333,"I am missing some funds from my account - I tried to transfer them using my credit card number, and it disappeared.",topping_up_by_card,topup_balance,human
+gold_2392,Where do I go to get the code to verify the top up card?,verify_top_up,topup_balance,human
