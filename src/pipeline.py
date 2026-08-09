@@ -9,31 +9,17 @@ import uuid
 
 from src.agents.intent_resolver import resolve_intent
 from src.agents.orchestrator import build_escalation, decide_disposition
+from src.ingress import sanitise
 from src.llm import LLMClient, OllamaClient
 from src.schemas import (
     Disposition,
+    Escalation,
     InboundMessage,
     RiskTier,
     RoutingDecision,
     SanitisedMessage,
     TokenCost,
 )
-
-
-def sanitise(message: InboundMessage) -> SanitisedMessage:
-    """Placeholder ingress. Session 4 replaces this with real PII and injection screening.
-
-    It exists now so the contract downstream is already correct: everything after
-    this point reads `text_redacted` and never `InboundMessage.text`. When the real
-    guard lands, no caller changes.
-    """
-    return SanitisedMessage(
-        message_id=message.message_id,
-        text_redacted=message.text,
-        detected_language="en",  # Language detection lands with the rest of ingress.
-        pii_found=[],
-        injection_score=0.0,
-    )
 
 
 def stub_reply(intent: str | None) -> str:
@@ -54,6 +40,15 @@ def route_message(text: str, llm: LLMClient | None = None) -> RoutingDecision:
 
     try:
         sanitised = sanitise(inbound)
+
+        # Two ingress verdicts short-circuit before any LLM call. Distress first:
+        # a person in crisis reaches a trained human without waiting on a model
+        # that might classify their message as a routine balance query.
+        if sanitised.vulnerability_flags:
+            return _ingress_escalation(sanitised, trace_id, started, reason="vulnerability_detected")
+        if sanitised.blocked:
+            return _ingress_escalation(sanitised, trace_id, started, reason=sanitised.block_reason)
+
         intent_result, cost = resolve_intent(sanitised, llm)
         outcome = decide_disposition(intent_result)
     except Exception as error:  # noqa: BLE001 — fail closed is the whole point
@@ -67,7 +62,10 @@ def route_message(text: str, llm: LLMClient | None = None) -> RoutingDecision:
         disposition=outcome.disposition,
         risk_tier=outcome.risk_tier,
         confidence=intent_result.confidence,
-        guardrails_triggered=outcome.guardrails_triggered,
+        # Redaction is a guardrail that fired, so it is recorded on every path it
+        # runs on, not only the ones that escalate.
+        guardrails_triggered=(["pii_redacted"] if sanitised.pii_found else [])
+        + outcome.guardrails_triggered,
         latency_ms=_elapsed_ms(started),
         token_cost=cost,
     )
@@ -78,6 +76,47 @@ def route_message(text: str, llm: LLMClient | None = None) -> RoutingDecision:
         decision.reply_text = stub_reply(intent_result.intent)
 
     return decision
+
+
+def _ingress_escalation(
+    sanitised: SanitisedMessage, trace_id: str, started: float, reason: str | None
+) -> RoutingDecision:
+    """Route straight to a human on an ingress verdict, without resolving intent.
+
+    No LLM call is made. For a blocked message that is the point — refused input
+    must not reach a model. For a distress signal it is a bonus: the routing is
+    correct regardless of what the message is nominally about, so spending a model
+    call to discover the topic would only add latency to an urgent handoff.
+    """
+    distressed = bool(sanitised.vulnerability_flags)
+    guardrails = ([reason] if reason else []) + sanitised.vulnerability_flags + (
+        ["pii_redacted"] if sanitised.pii_found else []
+    )
+
+    return RoutingDecision(
+        message_id=sanitised.message_id,
+        trace_id=trace_id,
+        domain="vulnerable_customer" if distressed else "security_fraud",
+        intent=None,
+        disposition=Disposition.HUMAN,
+        risk_tier=RiskTier.HIGH,
+        confidence=0.0,
+        escalation=Escalation(
+            queue="vulnerable_customer" if distressed else "security_fraud",
+            # Assumption 5's wording, applied to distress as well: elevated at a
+            # minimum, never the standard queue.
+            priority="elevated",
+            sla_minutes=15 if distressed else 30,
+            summary=(
+                f"Ingress routed this message to a human before intent resolution.\n"
+                f"Reason: {reason}.\n"
+                f"PII types redacted: {sanitised.pii_found or 'none'}."
+            ),
+        ),
+        guardrails_triggered=guardrails,
+        latency_ms=_elapsed_ms(started),
+        token_cost=TokenCost(),
+    )
 
 
 def _failed_closed(

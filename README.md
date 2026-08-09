@@ -7,9 +7,9 @@ the FAQ corpus cannot answer the question.
 > **A router that knows when it doesn't know, and proves it.**
 
 **Status:** routing works end to end. Contracts, the 77-row taxonomy, hybrid
-retrieval, two-stage intent resolution and the policy matrix are implemented.
-The RAG agent, ingress guardrails and egress verifier are still placeholders, so
-`reply_text` is a stub — retrieval is not yet wired into a reply.
+retrieval, two-stage intent resolution, the policy matrix and the ingress
+guardrails are implemented. The RAG agent and egress verifier are still
+placeholders, so `reply_text` is a stub — retrieval is not yet wired into a reply.
 
 ## Quickstart
 

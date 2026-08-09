@@ -37,6 +37,17 @@ orchestrator:
   out_of_taxonomy_risk: medium
   out_of_taxonomy_sla_minutes: 120
 
+ingress:
+  # Each matched injection pattern contributes this much. One clear hit
+  # ("ignore previous instructions") reaches the block threshold on its own,
+  # which is the intended behaviour — these phrases have no benign banking use.
+  injection_score_per_match: 0.5
+  # At or above this, the message is refused and no LLM call is made.
+  injection_block_threshold: 0.5
+  # langdetect needs some text to work with; below this it guesses from noise.
+  # Banking77 messages average ~60 characters, so this only skips the shortest.
+  min_chars_for_language_detection: 20
+
 embeddings:
   # Small English bi-encoder. Both the FAQ corpus and Banking77 are English, so a
   # multilingual model would cost size and speed for a capability this prototype

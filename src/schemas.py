@@ -80,6 +80,11 @@ class SanitisedMessage(BaseModel):
         default=None,
         description="Why ingress blocked, e.g. 'prompt_injection'. Set if and only if blocked is True.",
     )
+    vulnerability_flags: list[str] = Field(
+        default_factory=list,
+        description="Distress signal categories detected, e.g. ['bereavement']. Categories only, "
+        "never the matched phrase. Any entry routes the message straight to a human.",
+    )
 
 
 class IntentCandidate(BaseModel):
