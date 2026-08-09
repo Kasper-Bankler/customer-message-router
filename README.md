@@ -6,8 +6,10 @@ the FAQ corpus cannot answer the question.
 
 > **A router that knows when it doesn't know, and proves it.**
 
-**Status:** scaffolding. `src/schemas.py` is complete; the remaining modules are
-docstring placeholders. The quickstart below describes the finished system.
+**Status:** routing works end to end. Contracts, the 77-row taxonomy, hybrid
+retrieval, two-stage intent resolution and the policy matrix are implemented.
+The RAG agent, ingress guardrails and egress verifier are still placeholders, so
+`reply_text` is a stub — retrieval is not yet wired into a reply.
 
 ## Quickstart
 
@@ -18,7 +20,7 @@ git clone <this-repo> && cd danske-bank-routing
 python -m venv .venv && source .venv/bin/activate
 pip install -e .                    # installs dependencies and puts src/ on the path
 
-ollama pull qwen2.5:7b-instruct     # the local model; nothing leaves the machine
+ollama pull qwen2.5:3b-instruct     # the local model; nothing leaves the machine
 python -m src.retrieval --build     # embed the 30 FAQ articles into ChromaDB
 ```
 
@@ -34,13 +36,32 @@ the rows where the two retrievers disagree.
 Route a single message and print the decision:
 
 ```bash
-python -m src.cli "How long does an international transfer take?"
+python -m src.cli "I lost my card and someone is using it"
 ```
 
-The output is a `RoutingDecision`: disposition, risk tier, confidence, the FAQ
-articles cited, which guardrails fired, latency and token cost. A real example
-goes here once the pipeline runs end to end — it is deliberately left out rather
-than filled in with plausible-looking numbers.
+Real output, trimmed to the fields that carry the decision:
+
+```json
+{
+  "domain": "security_fraud",
+  "intent": "lost_or_stolen_card",
+  "disposition": "human",
+  "risk_tier": "critical",
+  "confidence": 0.8903,
+  "escalation": {
+    "queue": "security_fraud",
+    "priority": "urgent",
+    "sla_minutes": 15
+  },
+  "guardrails_triggered": [],
+  "latency_ms": 7161,
+  "token_cost": { "prompt_tokens": 130, "completion_tokens": 46, "usd": 0.0 }
+}
+```
+
+`guardrails_triggered` is empty here on purpose: the taxonomy row for
+`lost_or_stolen_card` already says `human`, so no override had to fire. The
+`fraud_override` backstop only appears when policy has to correct something.
 
 Optional UI:
 

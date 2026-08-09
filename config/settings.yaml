@@ -1,6 +1,42 @@
 # Runtime configuration: retrieval and confidence thresholds, model names, latency
 # and cost budgets. Every tunable number lives here, never inline in code.
 
+llm:
+  # qwen2.5 at 3B, not the 7B PLAN §3 names: this runs on an 8 GB M1 alongside the
+  # embedding model and Streamlit, and a 7B model swaps once all three are resident.
+  # Swapping it back is a one-line edit here, which is the point of LLMClient.
+  model: qwen2.5:3b-instruct
+  # Adjudication is a classification, not writing. Nothing here benefits from
+  # sampling, and a deterministic router is far easier to evaluate and defend.
+  temperature: 0.0
+  timeout_seconds: 60
+  # One retry, then fail. A model that cannot produce valid JSON twice in a row
+  # will not produce it on the third attempt, and the caller fails closed to HUMAN.
+  max_validation_retries: 1
+
+intent:
+  # Nearest training examples scanned before grouping by intent. 50 is comfortably
+  # more than the 5 intents we need, so a candidate is never missed because its
+  # examples were crowded out by a denser neighbouring intent.
+  knn_neighbours: 50
+  # Distinct intents shown to the adjudicator, per PLAN §2. Small enough that the
+  # model reliably picks between them rather than pattern-matching a long list.
+  candidate_count: 5
+  # Applied when the adjudicator overrides the kNN top-1. The two stages
+  # disagreeing is weak evidence, so the confidence it produces is discounted.
+  agreement_penalty: 0.9
+
+orchestrator:
+  # PROVISIONAL. Not tuned — there is no labelled disposition set yet. The Day 5
+  # threshold sweep replaces this with an operating point chosen on a
+  # precision/recall curve. Until then it is a placeholder, stated as one.
+  min_confidence: 0.55
+  # Applied when the adjudicator returns "none of these", so no taxonomy row exists
+  # to read a risk tier or SLA from. Medium rather than low: an unclassifiable
+  # message is not evidence of a harmless one.
+  out_of_taxonomy_risk: medium
+  out_of_taxonomy_sla_minutes: 120
+
 embeddings:
   # Small English bi-encoder. Both the FAQ corpus and Banking77 are English, so a
   # multilingual model would cost size and speed for a capability this prototype
