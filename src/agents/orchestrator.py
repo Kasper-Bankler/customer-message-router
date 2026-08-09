@@ -17,7 +17,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from src.schemas import Disposition, IntentResult, RiskTier
-from src.taxonomy import TAXONOMY, Domain
+from src.taxonomy import Domain, policy_for
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SETTINGS_YAML = REPO_ROOT / "config" / "settings.yaml"
@@ -54,7 +54,7 @@ def decide_disposition(result: IntentResult) -> DispositionOutcome:
             guardrails_triggered=["out_of_taxonomy"],
         )
 
-    policy = TAXONOMY[intent]
+    policy = policy_for(intent)
     disposition = policy.disposition
     triggered: list[str] = []
 

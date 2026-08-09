@@ -2,7 +2,7 @@
 
 This is the chart the whole case rests on: it shows that most intents have no
 grounding at all, which is why abstention is the designed behaviour rather than a
-failure. Run with `python eval/coverage_map.py`.
+failure. Run with `python eval/coverage_map.py`. It measures coverage only; it never routes a message or calls an LLM.
 """
 
 from pathlib import Path

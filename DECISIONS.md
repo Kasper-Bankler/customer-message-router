@@ -79,6 +79,33 @@ Assumptions live in `ASSUMPTIONS.md`; this file records choices, not premises.
 | 2026-08-09 | `RetrievedArticle` lives in `hybrid.py`, not `schemas.py` | `schemas.py` is the contract between *agents*; retrieval is a component the RAG agent calls, and its diagnostic fields (both retrievers' ranks) exist for inspection, not for the agent boundary. The agent will convert to the existing `Citation` | Putting it in `schemas.py` for uniformity, which would export three ranking fields that no agent should ever branch on |
 | 2026-08-08 | `notebooks/` and `slides/` are not tracked | Neither is code, and both would be committed as large binary or output-laden files that no reviewer reads from the repo | Tracking them as §4 specifies; rejected because the exploration notebook's only durable output is the coverage chart, which belongs in `eval/results/` |
 
+## Constants and thresholds, in one place
+
+Every tunable number, where it lives and where it came from. Added 2026-08-09
+after an audit found seven of them documented only as a code comment.
+
+| Constant | Value | Where | How it was chosen |
+| --- | --- | --- | --- |
+| coverage `similarity_threshold` | 0.77 | `settings.yaml` | Hand-inspected the ranked list of all 77 intents; the last correct match is 0.774 and the first wrong one 0.767. Not tuned — see the row above |
+| `retrieval_threshold` | 0.72 | `settings.yaml` | 24 test messages across 12 intents of known coverage; uncovered topped out at 0.7163, covered resumed at 0.7687. Provisional; the sweep in `eval/results/` supersedes it |
+| `RRF_K` | 60 | `retrieval/hybrid.py` | The constant from the original Reciprocal Rank Fusion paper, carried through PLAN §7. **Not tuned and not validated on this corpus** — at 30 documents the fusion is dominated by rank order, so k barely moves the result. Left at the paper value so it is defensible as a citation rather than a guess |
+| `knn_neighbours` | 50 | `settings.yaml` | Comfortably more than the 5 candidates needed, so a candidate is never crowded out by a denser neighbouring intent. Not sensitive: raising it changes nothing until an intent has >50 near neighbours |
+| `candidate_count` | 5 | `settings.yaml` | PLAN §2. Small enough that the adjudicator picks rather than pattern-matches a long list. Observed to be a ceiling, not a guarantee — unanimous neighbourhoods return fewer |
+| `agreement_penalty` | 0.9 | `settings.yaml` | Arbitrary discount applied when the adjudicator overrides kNN rank-1. Chosen to be visible but not decisive; never tuned, and its effect is unmeasured because `min_confidence` rarely binds |
+| `min_confidence` | 0.55 | `settings.yaml` | PROVISIONAL placeholder. Observed confidences cluster 0.81–0.95, so this gate has never fired on a real message. Flagged rather than tuned, because tuning it needs a labelled low-confidence set that does not exist |
+| `max_context_articles` | 3 | `settings.yaml` | Keeps the prompt short enough that the model cannot quietly answer from a fourth, weakly-related article. Not swept |
+| `injection_score_per_match` / `_block_threshold` | 0.5 / 0.5 | `settings.yaml` | One matched pattern blocks. These phrases have no benign banking use, and the measured false-positive rate across all 10,003 Banking77 training messages is 0. The false-*negative* rate against paraphrase is unmeasured |
+| `min_chars_for_language_detection` | 20 | `settings.yaml` | Banking77 messages average ~60 characters, so this skips only the shortest. Below it langdetect guesses from noise; `DetectorFactory.seed = 0` is set so it at least guesses the same way twice |
+| `temperature` | 0.0 | `settings.yaml` | Adjudication and grounded generation are both closed-form tasks. A deterministic router is far easier to evaluate, and nothing here benefits from sampling |
+| `max_validation_retries` | 1 | `settings.yaml` | Per brief. A model that cannot produce valid JSON twice will not produce it on the third attempt, and the caller fails closed to HUMAN. Measured 20/20 first-attempt validity, so the retry has never fired in anger |
+| `timeout_seconds` | 60 | `settings.yaml` | Generous ceiling for local CPU inference, not a target. The latency budget in ASSUMPTIONS #9 is the number that matters |
+| SLA ladder | 15/30/60/120/240 | `taxonomy.py` | Five rungs, each justified in the `taxonomy.yaml` header by what is happening to the customer's money. Enforced by a validator so a stray value fails loudly |
+| `out_of_taxonomy_risk` / `_sla_minutes` | medium / 120 | `settings.yaml` | Medium rather than low: an unclassifiable message is not evidence of a harmless one |
+| bootstrap resamples / seed | 10,000 / 42 | `eval/metrics.py` | 10,000 is PLAN §11's figure and is well past where percentile intervals stabilise at n=80. The seed is arbitrary; only its fixity matters |
+| gold-set `SEED` | 42 | `eval/build_goldset.py` | Arbitrary. Rerunning must reproduce the same sample or hand-applied labels stop matching their messages |
+| embedding model | `BAAI/bge-small-en-v1.5` | `settings.yaml` | English-only corpus and dataset; a multilingual model costs four times the size for a path never taken |
+| LLM | `qwen2.5:3b-instruct` | `settings.yaml` | 3B not 7B because of 8 GB M1 memory pressure. Measured 20/20 valid structured output |
+
 ## Divergence from PLAN.md
 
 `PLAN.md` is the design document written before any code existed. Where the

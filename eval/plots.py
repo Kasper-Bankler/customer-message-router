@@ -1,7 +1,7 @@
 """Charts for the evaluation: confusion matrices with the expensive cells called out, and the auto-reply precision/recall curve with the operating point marked.
 
 Every chart is written to eval/results/ as a PNG by run_eval.py, so the figures in
-the presentation and the numbers in the repository come from the same run.
+the presentation and the numbers in the repository come from the same run. Nothing here computes a metric — it only draws what run_eval.py already calculated.
 """
 
 from pathlib import Path

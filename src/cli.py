@@ -1,4 +1,4 @@
-"""Command-line demo entry point: routes one customer message and prints the RoutingDecision as JSON.
+"""Command-line demo entry point: routes one customer message and prints the RoutingDecision as JSON. It holds no logic of its own: everything it prints comes from pipeline.route_message.
 
     python -m src.cli "I lost my card and someone is using it"
 """

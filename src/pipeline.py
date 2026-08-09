@@ -12,10 +12,10 @@ import uuid
 from src.agents.handoff_agent import build_escalation
 from src.agents.intent_resolver import resolve_intent
 from src.agents.orchestrator import DispositionOutcome, decide_disposition
-from src.agents.rag_agent import RagOutcome, generate_reply
+from src.agents.rag_agent import generate_reply
 from src.egress import verify_reply
 from src.ingress import sanitise
-from src.llm import LLMClient, OllamaClient
+from src.llm import LLMClient, OllamaClient, add_cost
 from src.schemas import (
     Disposition,
     Escalation,
@@ -125,7 +125,7 @@ def _run_rag(
     result, cost = generate_reply(sanitised.text_redacted, llm)
     trace.record_rag(mark, result, cost)
     if cost is not None:
-        decision.token_cost = _add_cost(decision.token_cost, cost)
+        decision.token_cost = add_cost(decision.token_cost, cost)
 
     if result.abstained or result.reply_text is None:
         # grounded stays None: no reply was generated, which is not the same as a
@@ -165,14 +165,6 @@ def _downgrade_to_human(
         update={"guardrails_triggered": outcome.guardrails_triggered + [reason]}
     )
     decision.escalation = build_escalation(intent_result, downgraded, suggested_reply)
-
-
-def _add_cost(left: TokenCost, right: TokenCost) -> TokenCost:
-    return TokenCost(
-        prompt_tokens=left.prompt_tokens + right.prompt_tokens,
-        completion_tokens=left.completion_tokens + right.completion_tokens,
-        usd=left.usd + right.usd,
-    )
 
 
 def _ingress_escalation(

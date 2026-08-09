@@ -4,7 +4,11 @@ The case gave no business rules, so these are mine. Every one has a *because*,
 and every one is falsifiable — if a Danske Bank stakeholder disagrees with an
 assumption here, the system changes in a known place rather than everywhere.
 
-Last reviewed: 2026-08-08.
+Last reviewed: 2026-08-09, against the finished implementation. Four assumptions
+are now contradicted or unfulfilled by what was built. They are recorded as
+written and the conflicts are listed at the foot of this file rather than edited
+away — an assumption quietly rewritten to match the code is not an assumption,
+it is a description.
 
 ## Data and scope
 
@@ -69,6 +73,47 @@ Last reviewed: 2026-08-08.
     requirement, not a preference, and under DORA the LLM provider is a critical
     ICT third party, so the abstraction layer is concentration-risk management
     rather than gold-plating.
+
+## Reconciliation with the implementation
+
+Measured on the 80-message gold set and the adversarial suite; see
+`eval/results/baseline/`.
+
+**4 — non-English handling is weaker than written.** The assumption says language
+is detected and the failure rate measured in the adversarial suite. Detection is
+implemented and `detected_language` is recorded on every trace, but **no code
+reads it** — nothing routes on language. The two non-English adversarial cases do
+pass, and they pass *by accident*: the Danish one via `low_confidence` and the
+German one via `out_of_taxonomy`, neither of which is a language rule. The
+promised measurement of langdetect's failure rate on short strings was never
+built. Either the assumption should be narrowed to "language is recorded but not
+acted on", or a language gate belongs in `ingress.py`. **Unresolved — your call.**
+
+**8 — the operating point overshoots its own target.** The assumption says "I
+would rather escalate 40% of answerable messages". Measured auto-reply recall is
+**0.308**, so the system escalates roughly **69%** of the messages a human
+labelled answerable. The direction of the trade is right and precision held at
+1.000, but the stated 40% was a guess made before any measurement and the real
+figure is nearly double it. The threshold sweep in
+`eval/results/baseline/threshold_sweep.csv` shows what it would cost to move.
+
+**9 — the latency budget is met for routing and missed for replies.** The
+assumption sets p95 under 3 s for a routing decision and under 6 s including a
+generated reply. Escalation and blocked lanes land at **2.0–2.5 s** (inside
+budget); a grounded auto-reply measures **9.7–12.7 s** on an 8 GB M1 running
+`qwen2.5:3b-instruct` locally, which is **twice the stated budget**. Two LLM
+calls happen on that path (adjudication, then generation) and both are local CPU
+inference. A hosted model would very likely meet it; the assumption should not be
+relaxed to match a laptop.
+
+**6 — one registered tool sits on the wrong side of the rule.** The assumption
+forbids any action that alters credit terms, and limits actions to reversible,
+low-blast-radius operations. `request_card_limit_change` is in the registry and
+alters a credit term, and `block_card` is not reversible by the customer. Both
+require human approval, no executor does anything but return a dry-run receipt,
+and no intent currently maps to either — so nothing can propose them today. They
+exist to demonstrate the approval gate. The tension is real and is noted in the
+code, but the assumption as written does not permit them.
 
 ## Scope boundary, stated deliberately
 

@@ -23,7 +23,6 @@ import argparse
 import json
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 # Sibling modules, not a package: running `python eval/run_eval.py` puts eval/ on

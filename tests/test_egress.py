@@ -3,7 +3,7 @@
 The worst thing this system could do is put a plausible, invented emergency
 hotline number in front of someone whose card has just been stolen. These tests
 exist to make that impossible, so they are written as attacks rather than as
-coverage.
+coverage. They test the regex guard only, never the model that produced the reply.
 """
 
 import pytest

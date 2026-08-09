@@ -2,7 +2,7 @@
 
 Split out of run_eval.py because they are one coherent idea — "what changes if I
 change one component?" — and because each answers a question a panel will ask.
-run_eval.py stays the single entry point; nothing here is run directly.
+run_eval.py stays the single entry point; nothing here is run directly, and nothing here writes files.
 """
 
 from pathlib import Path

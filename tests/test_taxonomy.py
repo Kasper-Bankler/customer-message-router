@@ -1,4 +1,4 @@
-"""Guards the routing table: that INTENT_NAMES still matches the real dataset, that taxonomy.yaml covers it exactly, and that the safety invariants actually reject a bad edit."""
+"""Guards the routing table: that INTENT_NAMES still matches the real dataset, that taxonomy.yaml covers it exactly, and that the safety invariants actually reject a bad edit. These tests never touch taxonomy.yaml itself; they read it and mutate copies."""
 
 import pytest
 from pydantic import ValidationError

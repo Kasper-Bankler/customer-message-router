@@ -104,16 +104,15 @@ def plausible_cpr(match: re.Match[str]) -> bool:
     return 1 <= day <= 31 and 1 <= month <= 12
 
 
-def redact_pii(text: str) -> tuple[str, list[str]]:
-    """Replace every PII value with a typed placeholder. Returns the text and the types found.
+def redact_one_type(text: str, pii_type: str, pattern: re.Pattern[str], found: list[str]) -> str:
+    """Replace every match of one PII pattern, appending the type to `found` if any matched.
 
-    The placeholder keeps the shape of the message visible to the router — "my
-    <PAN> was declined" still classifies correctly — while the value itself never
-    travels past this function.
+    Taking `pii_type` as a parameter is what makes the inner function safe: it
+    closes over an argument rather than a loop variable, so no default-argument
+    binding trick is needed to pin the value.
     """
-    found: list[str] = []
 
-    def replace(pii_type: str, match: re.Match[str]) -> str:
+    def replace(match: re.Match[str]) -> str:
         if pii_type == "CPR" and not plausible_cpr(match):
             return match.group(0)
         if pii_type == "PAN" and not luhn_valid(re.sub(r"\D", "", match.group(0))):
@@ -122,8 +121,19 @@ def redact_pii(text: str) -> tuple[str, list[str]]:
             found.append(pii_type)
         return f"<{pii_type}>"
 
+    return pattern.sub(replace, text)
+
+
+def redact_pii(text: str) -> tuple[str, list[str]]:
+    """Replace every PII value with a typed placeholder. Returns the text and the types found.
+
+    The placeholder keeps the shape of the message visible to the router — "my
+    <PAN> was declined" still classifies correctly — while the value itself never
+    travels past this function.
+    """
+    found: list[str] = []
     for pii_type, pattern in PII_PATTERNS:
-        text = pattern.sub(lambda m, t=pii_type: replace(t, m), text)
+        text = redact_one_type(text, pii_type, pattern, found)
     return text, found
 
 

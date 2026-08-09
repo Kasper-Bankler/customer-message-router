@@ -1,4 +1,4 @@
-"""LLMClient interface plus an Ollama implementation; every LLM call in the system goes through here.
+"""LLMClient interface plus an Ollama implementation; every LLM call in the system goes through here. It does not stream, cache, or retry beyond a single validation retry.
 
 The interface exists before there are two implementations, which the complexity
 budget otherwise forbids. The stated reason is concentration risk: a bank cannot
@@ -7,7 +7,6 @@ adding a cost cap or routing EU traffic then means editing every agent. One
 chokepoint makes those one-file changes.
 """
 
-import json
 from pathlib import Path
 from typing import TypeVar
 
@@ -71,7 +70,7 @@ class OllamaClient(LLMClient):
 
         for _ in range(MAX_VALIDATION_RETRIES + 1):
             content, call_cost = self._chat(messages, schema)
-            cost = _add_cost(cost, call_cost)
+            cost = add_cost(cost, call_cost)
             try:
                 return schema.model_validate_json(content), cost
             except ValidationError as error:
@@ -106,8 +105,8 @@ class OllamaClient(LLMClient):
         )
 
 
-def _add_cost(left: TokenCost, right: TokenCost) -> TokenCost:
-    """Accumulate spend across retries, so a retried call reports what it really cost."""
+def add_cost(left: TokenCost, right: TokenCost) -> TokenCost:
+    """Add two token costs. Used to accumulate spend across retries and across agents."""
     return TokenCost(
         prompt_tokens=left.prompt_tokens + right.prompt_tokens,
         completion_tokens=left.completion_tokens + right.completion_tokens,

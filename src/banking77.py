@@ -1,4 +1,4 @@
-"""Loads the Banking77 dataset from its canonical CSV source, cached under data/banking77/, and holds the frozen list of its 77 intent names."""
+"""Loads the Banking77 dataset from its canonical CSV source, cached under data/banking77/, and holds the frozen list of its 77 intent names. It does not clean, filter or relabel the data — the dataset is used exactly as published."""
 
 import urllib.request
 from pathlib import Path

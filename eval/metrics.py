@@ -79,15 +79,28 @@ def majority_baseline(truth: np.ndarray) -> float:
     return float(counts.max() / len(truth))
 
 
+def f1_statistic(
+    truth: np.ndarray, predicted: np.ndarray, label: str
+) -> Callable[[np.ndarray], float]:
+    """Build the "F1 for this label" statistic the bootstrap resamples.
+
+    A named factory rather than an inline lambda: the returned closure captures
+    `label` as a function argument, so it needs no default-argument trick to pin
+    the value across loop iterations.
+    """
+
+    def statistic(indices: np.ndarray) -> float:
+        return precision_recall_f1(truth[indices], predicted[indices], label)[2]
+
+    return statistic
+
+
 def per_class_table(truth: np.ndarray, predicted: np.ndarray, labels: list[str]) -> pd.DataFrame:
     """Precision, recall, F1 and support per class, each with its own bootstrap interval."""
     rows = []
     for label in labels:
         precision, recall, f1 = precision_recall_f1(truth, predicted, label)
-        low, high = bootstrap_ci(
-            lambda idx, lb=label: precision_recall_f1(truth[idx], predicted[idx], lb)[2],
-            len(truth),
-        )
+        low, high = bootstrap_ci(f1_statistic(truth, predicted, label), len(truth))
         rows.append(
             {
                 "class": label,

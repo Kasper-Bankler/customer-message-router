@@ -1,4 +1,4 @@
-"""Query CLI for eyeballing retrieval before anything is built on top of it.
+"""Query CLI for eyeballing retrieval before anything is built on top of it. It never routes, judges or abstains — it only shows what retrieval returned.
 
     python -m src.retrieval --build
     python -m src.retrieval "how long does an international transfer take?"

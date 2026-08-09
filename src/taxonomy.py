@@ -1,4 +1,4 @@
-"""Reads config/taxonomy.yaml into typed policy rows and validates it at import time, so a typo in the routing table fails loudly here instead of silently misrouting a customer."""
+"""Reads config/taxonomy.yaml into typed policy rows and validates it at import time, so a typo in the routing table fails loudly here instead of silently misrouting a customer. It only loads and validates — it never decides a disposition, which is the orchestrator's job."""
 
 from enum import Enum
 from pathlib import Path

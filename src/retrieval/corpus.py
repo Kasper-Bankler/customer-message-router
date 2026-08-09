@@ -1,4 +1,4 @@
-"""Reads the 30-article FAQ corpus from CSV into typed articles. The only module that touches the corpus file; indexing and search build on what it returns."""
+"""Reads the 30-article FAQ corpus from CSV into typed articles. The only module that touches the corpus file; indexing and search build on what it returns. It does no embedding, ranking or chunking."""
 
 from pathlib import Path
 
