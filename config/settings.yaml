@@ -1,3 +1,20 @@
 # Runtime configuration: retrieval and confidence thresholds, model names, latency
 # and cost budgets. Every tunable number lives here, never inline in code.
-# Not yet populated.
+
+embeddings:
+  # Small English bi-encoder. Both the FAQ corpus and Banking77 are English, so a
+  # multilingual model would cost size and speed for a capability this prototype
+  # never uses — non-English messages are stopped at ingress, not retrieved for.
+  model: BAAI/bge-small-en-v1.5
+  # bge models are trained asymmetrically: queries carry this instruction, indexed
+  # passages carry nothing. Dropping it costs a few points of retrieval quality.
+  query_prefix: "Represent this sentence for searching relevant passages: "
+
+coverage:
+  # An intent counts as FAQ-covered when its training-example centroid reaches this
+  # cosine similarity to at least one article. Not tuned: chosen by ranking all 77
+  # intents by best-article similarity and reading down the list until the match
+  # stopped being topically correct. That break falls between
+  # transfer_not_received_by_recipient (0.774, genuinely answered by doc_028) and
+  # exchange_rate (0.767, whose best match only quotes an FX *fee*, never a rate).
+  similarity_threshold: 0.77

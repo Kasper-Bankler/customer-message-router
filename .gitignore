@@ -4,6 +4,9 @@ __pycache__/
 build/
 .env
 chroma_db/
+# Banking77 is downloaded on first use and re-downloadable; the FAQ corpus is
+# supplied with the case and stays tracked.
+data/banking77/
 .ipynb_checkpoints/
 # Scratch exploration and the built deck: useful locally, not repo deliverables
 notebooks/

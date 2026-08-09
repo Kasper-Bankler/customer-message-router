@@ -42,6 +42,7 @@ streamlit run app/streamlit_app.py
 ## Evaluation
 
 ```bash
+python eval/coverage_map.py         # which intents the FAQ can ground -> coverage.csv + .png
 python eval/build_goldset.py        # sample ~100 messages for hand-labelling
 python eval/run_eval.py             # metrics + confusion matrices + bootstrap CIs
 python eval/adversarial.py          # injection and edge-case suite

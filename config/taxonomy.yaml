@@ -1,3 +1,668 @@
-# The 77 Banking77 intents mapped to domain, disposition, risk_tier, sla_minutes,
-# autoreply_allowed and a rationale. Built LLM-assisted, then hand-reviewed row by row.
-# Not yet populated.
+# Banking77 intent taxonomy: 77 intents -> domain, disposition, risk, SLA.
+#
+# Banking77 ships intent labels but no domain grouping and no routing rules.
+# Creating that mapping is a deliverable in its own right; this file is it.
+#
+# HOW TO READ A ROW
+#
+#   domain             One of the seven business domains below.
+#   disposition        The lane the policy matrix selects when intent confidence
+#                      is high. It is a ceiling, not a guarantee: the RAG agent's
+#                      abstention gate can still downgrade auto_reply to human.
+#                      Nothing can upgrade a row in the other direction.
+#   risk_tier          Blast radius if this message is handled wrongly.
+#   sla_minutes        Response target once a human has the message. It applies
+#                      to every row, not just the human ones, because an
+#                      abstention can send any intent to a queue.
+#   autoreply_allowed  A second, independent switch. Deliberately redundant with
+#                      disposition: a fraud row is protected both by
+#                      `disposition: human` and by `autoreply_allowed: false`,
+#                      so one edit cannot silently open the auto-reply path.
+#   rationale          Why this row is what it is. Written for hand-review.
+#
+# SLA LADDER (minutes), chosen to be defensible rather than precise:
+#   15   money may be leaving the account right now
+#   30   security control failing, customer possibly locked out
+#   60   money already missing or an irreversible request
+#   120  disputed charge or a blocked payment, no active loss
+#   240  informational; the customer is not waiting on money
+#
+# DOMAINS
+#   cards_issuing       20 intents  physical/virtual card lifecycle
+#   payments_transfers  20 intents  moving money between accounts
+#   topup_balance       12 intents  funding the account, balance visibility
+#   fx_international     9 intents  currency, cross-border, country support
+#   account_servicing    9 intents  identity, credentials, account lifecycle
+#   security_fraud       7 intents  forced human, no exceptions
+#   lending_products     0 intents  see note at the foot of this file
+#
+# PROVENANCE: first draft written by an LLM in a single offline pass, then
+# hand-reviewed row by row. Nothing here is read by an LLM at runtime — the
+# router loads this file as static config.
+
+activate_my_card:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Self-service activation steps, grounded in doc_011. No money moves and the worst outcome is a repeated instruction."
+
+age_limit:
+  domain: account_servicing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Eligibility question about youth accounts, answered by doc_020. Product information, not a suitability recommendation."
+
+apple_pay_or_google_pay:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Wallet support question, grounded in doc_022. Purely informational."
+
+atm_support:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Which ATMs accept the card. Informational, no account-specific data needed."
+
+automatic_top_up:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How recurring funding works; doc_019 covers standing orders. Explaining a feature is not setting one up."
+
+balance_not_updated_after_bank_transfer:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Almost always normal settlement lag. Explaining expected timing deflects the majority; if the customer pushes back, the follow-up escalates."
+
+balance_not_updated_after_cheque_or_cash_deposit:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Same settlement-lag reasoning as bank transfers, with a longer expected clearing window for cheques."
+
+beneficiary_not_allowed:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "A blocked payee is usually an AML or fraud control firing. The reason is not disclosable by an automated channel, and explaining the control would help someone probing it."
+
+cancel_transfer:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 60
+  autoreply_allowed: false
+  rationale: "Time-critical and money-moving. doc_013 could answer it informationally, but a customer asking to cancel wants the payment stopped, and no tool here may do that."
+
+card_about_to_expire:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Renewal timing. Routine lifecycle information."
+
+card_acceptance:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Where the card is accepted. Informational."
+
+card_arrival:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Delivery status question answered with standard timelines. A specific tracking answer would need account data the prototype does not hold."
+
+card_delivery_estimate:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Same as card_arrival; standard delivery windows only."
+
+card_linking:
+  domain: cards_issuing
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Re-linking a card that was previously reported missing effectively un-blocks it. That is a security state change and needs an authenticated human."
+
+card_not_working:
+  domain: cards_issuing
+  disposition: clarify
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Genuinely ambiguous: declined, damaged, expired, or blocked after suspected fraud. The branches diverge sharply, so one question is cheaper and safer than guessing."
+
+card_payment_fee_charged:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Fee explanation; doc_010 covers card fees abroad. Explaining a fee schedule is not disputing a charge."
+
+card_payment_not_recognised:
+  domain: security_fraud
+  disposition: human
+  risk_tier: critical
+  sla_minutes: 15
+  autoreply_allowed: false
+  rationale: "An unrecognised card payment is a live fraud report. Forced human regardless of model confidence; doc_026 goes to the agent as context, never to the customer as an answer."
+
+card_payment_wrong_exchange_rate:
+  domain: fx_international
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "A disputed rate is a claim about money already taken. It needs the actual transaction, which means a human with account access."
+
+card_swallowed:
+  domain: cards_issuing
+  disposition: human
+  risk_tier: high
+  sla_minutes: 30
+  autoreply_allowed: false
+  rationale: "The card is physically outside the customer's control and may have been captured by a tampered ATM. Treated as card-at-risk, not as a delivery question."
+
+cash_withdrawal_charge:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Standard withdrawal fee explanation. Informational."
+
+cash_withdrawal_not_recognised:
+  domain: security_fraud
+  disposition: human
+  risk_tier: critical
+  sla_minutes: 15
+  autoreply_allowed: false
+  rationale: "An unrecognised withdrawal means the card or PIN is compromised and cash is leaving. Forced human."
+
+change_pin:
+  domain: account_servicing
+  disposition: auto_reply
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: true
+  rationale: "doc_027 explains the self-service route. The reply points at the official flow; it never changes a credential, which no tool in this system may do."
+
+compromised_card:
+  domain: security_fraud
+  disposition: human
+  risk_tier: critical
+  sla_minutes: 15
+  autoreply_allowed: false
+  rationale: "Explicit compromise report. Forced human, elevated priority, no automated reply under any confidence."
+
+contactless_not_working:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Routine troubleshooting with no money at stake."
+
+country_support:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Which countries are served; doc_025 covers access while travelling. Informational."
+
+declined_card_payment:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Common causes explained generically. A decline is the control working; no money left the account."
+
+declined_cash_withdrawal:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Same reasoning as declined_card_payment. Nothing was lost."
+
+declined_transfer:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Transfers decline for reasons that include sanctions and fraud screening, and those reasons must not be explained by an automated channel."
+
+direct_debit_payment_not_recognised:
+  domain: security_fraud
+  disposition: human
+  risk_tier: critical
+  sla_minutes: 15
+  autoreply_allowed: false
+  rationale: "An unrecognised direct debit is an unauthorised mandate — recurring, so the loss compounds until stopped. Forced human."
+
+disposable_card_limits:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Product limits on disposable cards. Informational."
+
+edit_personal_details:
+  domain: account_servicing
+  disposition: action
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Maps to the update_contact_details tool and is grounded in doc_004. Reversible and low blast radius, but a contact-detail change is a known account-takeover step, so it is proposed and never auto-confirmed."
+
+exchange_charge:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Published FX fee question. Informational."
+
+exchange_rate:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Policy permits an auto-reply, but no FAQ article states a rate, so retrieval abstains and this escalates. That is the intended behaviour and the honest-abstention demo case."
+
+exchange_via_app:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How to convert currency in the app. Procedural, not a rate quote."
+
+extra_charge_on_statement:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Usually a known fee type the customer has not recognised as a fee. If the customer means they do not recognise the transaction at all, that is card_payment_not_recognised and the fraud row governs."
+
+failed_transfer:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "The customer has tried and failed to move money, so an explanation of normal timings does not help. Someone needs to look at why it failed."
+
+fiat_currency_support:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Which currencies are supported. Informational."
+
+get_disposable_virtual_card:
+  domain: cards_issuing
+  disposition: action
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: false
+  rationale: "Issuing a disposable virtual card is reversible and has almost no blast radius, so it is the cleanest example of the propose-then-approve path."
+
+get_physical_card:
+  domain: cards_issuing
+  disposition: action
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: false
+  rationale: "Card order via the order_replacement_card tool. Reversible; the card ships to the address on file, which limits the damage from a wrong call."
+
+getting_spare_card:
+  domain: cards_issuing
+  disposition: action
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: false
+  rationale: "Same tool and same reasoning as get_physical_card."
+
+getting_virtual_card:
+  domain: cards_issuing
+  disposition: action
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: false
+  rationale: "Virtual card issuance. Reversible, no physical delivery."
+
+lost_or_stolen_card:
+  domain: security_fraud
+  disposition: human
+  risk_tier: critical
+  sla_minutes: 15
+  autoreply_allowed: false
+  rationale: "Potential financial loss in progress; blocking must be confirmed through an authenticated channel. doc_001 is attached to the agent as suggested context, not sent to the customer. This is the demo case where policy overrides available grounding."
+
+lost_or_stolen_phone:
+  domain: security_fraud
+  disposition: human
+  risk_tier: critical
+  sla_minutes: 15
+  autoreply_allowed: false
+  rationale: "A stolen phone with the banking app on it is an account-takeover risk, not a device problem. doc_018 exists but the same override applies."
+
+order_physical_card:
+  domain: cards_issuing
+  disposition: action
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: false
+  rationale: "Card order via the same reversible tool as get_physical_card."
+
+passcode_forgotten:
+  domain: account_servicing
+  disposition: auto_reply
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: true
+  rationale: "doc_007 describes the standard reset route. The reply points at that route and performs nothing; no credential is reset, and no identity is confirmed, by this system."
+
+pending_card_payment:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Explaining what pending means is standard settlement information."
+
+pending_cash_withdrawal:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Same settlement explanation as pending_card_payment."
+
+pending_top_up:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Expected top-up timing. Informational."
+
+pending_transfer:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Expected transfer timing, grounded in doc_028 for the international case."
+
+pin_blocked:
+  domain: account_servicing
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "A blocked PIN is either a forgetful customer or someone guessing at a stolen card. The system cannot tell which, and the safe branch is the human one."
+
+receiving_money:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How inbound transfers work, grounded in doc_008 and doc_030. Informational."
+
+Refund_not_showing_up:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "The customer is owed money that has not arrived. Timing guidance alone reads as a brush-off, and the merchant side needs checking. Label capitalisation is Banking77's, reproduced exactly."
+
+request_refund:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How the refund process works, before any specific refund is in dispute."
+
+"reverted_card_payment?":
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Payments being reversed back to the customer repeatedly indicates a block on the account or the merchant. Needs investigation. Trailing question mark is Banking77's own label, reproduced exactly."
+
+supported_cards_and_currencies:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Which card schemes and currencies are supported. Informational."
+
+terminate_account:
+  domain: account_servicing
+  disposition: human
+  risk_tier: high
+  sla_minutes: 60
+  autoreply_allowed: false
+  rationale: "Irreversible, and closure requests are frequently a symptom of an unresolved complaint or a vulnerable customer. Always a human, never a form."
+
+top_up_by_bank_transfer_charge:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Published top-up fee. Informational."
+
+top_up_by_card_charge:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Published top-up fee. Informational."
+
+top_up_by_cash_or_cheque:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Which top-up methods exist. Informational."
+
+top_up_failed:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "A failed top-up means the money did not leave, unlike a reverted one. Common causes and a retry instruction resolve most cases."
+
+top_up_limits:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Limit values, with doc_002 covering the transfer ceiling. Informational."
+
+top_up_reverted:
+  domain: topup_balance
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Money left the customer and came back, or appears to have vanished in between. That is a balance discrepancy, not a timing question."
+
+topping_up_by_card:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How to top up with a card. Procedural."
+
+transaction_charged_twice:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "A duplicate charge is money wrongly taken and needs a reversal a human must authorise. Telling the customer duplicates usually drop off is exactly the wrong answer if it does not."
+
+transfer_fee_charged:
+  domain: fx_international
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Explaining the transfer fee schedule. Informational; disputing a specific fee is a different intent."
+
+transfer_into_account:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How to make a transfer, with doc_002 and doc_030 as grounding. Procedural."
+
+transfer_not_received_by_recipient:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: high
+  sla_minutes: 60
+  autoreply_allowed: false
+  rationale: "Money has left the customer and not arrived. Until traced it is indistinguishable from a misdirected or intercepted payment."
+
+transfer_timing:
+  domain: payments_transfers
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Directly answered by doc_028. The clean grounded-auto-reply demo case."
+
+unable_to_verify_identity:
+  domain: security_fraud
+  disposition: human
+  risk_tier: high
+  sla_minutes: 30
+  autoreply_allowed: false
+  rationale: "A failing identity check is either a locked-out customer or someone failing it because the account is not theirs. Automated help here would coach an attacker."
+
+verify_my_identity:
+  domain: account_servicing
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "Verification is an authenticated step with document handling. doc_014 and doc_021 give the agent context, but the process itself is not self-service."
+
+verify_source_of_funds:
+  domain: account_servicing
+  disposition: human
+  risk_tier: high
+  sla_minutes: 60
+  autoreply_allowed: false
+  rationale: "An AML enquiry. Regulated, evidence-based, and nothing an automated channel should shape the customer's answer to."
+
+verify_top_up:
+  domain: topup_balance
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "How to confirm a top-up landed. Procedural."
+
+virtual_card_not_working:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Troubleshooting a virtual card, most often an expiry or single-use limit. No money at stake."
+
+visa_or_mastercard:
+  domain: cards_issuing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Which schemes are offered; doc_029 covers card variants. Informational."
+
+why_verify_identity:
+  domain: account_servicing
+  disposition: auto_reply
+  risk_tier: low
+  sla_minutes: 240
+  autoreply_allowed: true
+  rationale: "Explaining why KYC exists is general and reassuring, and discloses nothing account-specific. Distinct from verify_my_identity, which is the process itself."
+
+wrong_amount_of_cash_received:
+  domain: payments_transfers
+  disposition: human
+  risk_tier: high
+  sla_minutes: 60
+  autoreply_allowed: false
+  rationale: "An ATM dispensing less than it debited is a cash discrepancy requiring a claim and reconciliation against the machine. Money is missing now."
+
+wrong_exchange_rate_for_cash_withdrawal:
+  domain: fx_international
+  disposition: human
+  risk_tier: medium
+  sla_minutes: 120
+  autoreply_allowed: false
+  rationale: "A disputed rate on a completed withdrawal needs the actual transaction record, which means a human."
+
+# lending_products has no Banking77 intent, deliberately.
+#
+# Five FAQ articles (doc_005 mortgage, doc_006 pre-approval, doc_012 fixed vs
+# variable, doc_016 personal loan rates, doc_023 late payment) sit in a domain
+# the intent taxonomy cannot reach. Any lending question is therefore
+# out-of-taxonomy by construction, and out-of-taxonomy routes to a human.
+#
+# That is the correct outcome for a second reason: assumption 7 forbids
+# automated replies that constitute financial advice, and rate or suitability
+# questions are exactly that. The gap in the taxonomy and the guardrail agree.

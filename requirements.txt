@@ -18,8 +18,9 @@ rank-bm25>=0.2
 # Ingress guardrails. langdetect is weak on short strings; see ASSUMPTIONS.md #4.
 langdetect>=1.0.9
 
-# Data and evaluation
-datasets>=3.0
+# Data and evaluation. `datasets` was dropped: Banking77 on the Hub is a loader
+# *script*, which datasets>=3 refuses to execute, so src/banking77.py fetches the
+# same two CSVs over urllib instead. See DECISIONS.md.
 pandas>=2.2
 numpy>=1.26
 scikit-learn>=1.5
