@@ -1,0 +1,12 @@
+# Streamlit's file watcher walks __path__ on every imported module to decide what
+# to auto-reload. That wakes transformers' lazy loader, which tries to import
+# image-processing modules needing torchvision — a dependency this project has no
+# use for. The result is hundreds of harmless tracebacks at startup.
+#
+# Turning the watcher off silences them. The only thing lost is auto-reload on
+# file save, which a demo does not want anyway.
+[server]
+fileWatcherType = "none"
+
+[browser]
+gatherUsageStats = false
