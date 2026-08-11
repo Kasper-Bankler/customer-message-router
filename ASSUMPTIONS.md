@@ -1,6 +1,6 @@
 # Assumptions
 
-The case gave no business rules, so these are mine. Every one has a *because*,
+The case gave no business rules, so these are mine. Every one has a _because_,
 and every one is falsifiable — if a Danske Bank stakeholder disagrees with an
 assumption here, the system changes in a known place rather than everywhere.
 
@@ -31,7 +31,7 @@ it is a description.
    pipeline — this is a real production gap, not a solved problem, because
    Danish retrieval quality and CPR-number formats are untested here.
 
-   *Known limitation, stated deliberately:* detection uses `langdetect`, which is
+   _Known limitation, stated deliberately:_ detection uses `langdetect`, which is
    unreliable on very short strings — and Banking77 messages are short. I chose
    to measure that failure rate in the adversarial suite rather than reach for a
    heavier detector, because at this scope an honest, quantified limitation is
@@ -48,7 +48,7 @@ it is a description.
 
 6. **No action agent may move money, change credentials, or alter credit
    terms.** Actions are limited to reversible, low-blast-radius operations, and
-   every action is *proposed*, never executed — because a prototype has no
+   every action is _proposed_, never executed — because a prototype has no
    business touching a real system, and the approval boundary is the interesting
    part of the design anyway.
 
@@ -77,13 +77,13 @@ it is a description.
 ## Reconciliation with the implementation
 
 Measured on the 80-message gold set and the adversarial suite; see
-`eval/results/baseline/`.
+`eval/results/`.
 
 **4 — non-English handling is weaker than written.** The assumption says language
 is detected and the failure rate measured in the adversarial suite. Detection is
 implemented and `detected_language` is recorded on every trace, but **no code
 reads it** — nothing routes on language. The two non-English adversarial cases do
-pass, and they pass *by accident*: the Danish one via `low_confidence` and the
+pass, and they pass _by accident_: the Danish one via `low_confidence` and the
 German one via `out_of_taxonomy`, neither of which is a language rule. The
 promised measurement of langdetect's failure rate on short strings was never
 built. Either the assumption should be narrowed to "language is recorded but not
@@ -95,7 +95,7 @@ would rather escalate 40% of answerable messages". Measured auto-reply recall is
 labelled answerable. The direction of the trade is right and precision held at
 1.000, but the stated 40% was a guess made before any measurement and the real
 figure is nearly double it. The threshold sweep in
-`eval/results/baseline/threshold_sweep.csv` shows what it would cost to move.
+`eval/results/threshold_sweep.csv` shows what it would cost to move.
 
 **9 — the latency budget is met for routing and missed for replies.** The
 assumption sets p95 under 3 s for a routing decision and under 6 s including a

@@ -1,8 +1,0 @@
-class,precision,recall,f1,f1_ci_low,f1_ci_high,support
-cards_issuing,1.0,0.833,0.909,0.75,1.0,12
-payments_transfers,0.875,0.955,0.913,0.81,0.981,22
-topup_balance,0.857,0.75,0.8,0.5,1.0,8
-fx_international,1.0,1.0,1.0,1.0,1.0,7
-account_servicing,0.75,0.818,0.783,0.545,0.941,11
-security_fraud,0.933,0.7,0.8,0.625,0.929,20
-lending_products,0.0,0.0,0.0,0.0,0.0,0
