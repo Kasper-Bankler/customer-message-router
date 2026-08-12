@@ -97,10 +97,20 @@ fraud_recall                     1.000                        n=20
 auto_reply_precision             1.000                        n=4
 ```
 
-Read the accuracy line against the baseline: the margin is +0.088 and the
-interval reaches down to 0.787, so at n=80 this does **not** beat "always answer
-human" at conventional significance. That is why macro-F1 and balanced accuracy
-are the headlines — their baselines do not move with the class balance.
+Read the accuracy line against the baseline. The interval runs 0.787–0.938 and
+the baseline is 0.775, so the whole interval sits **above** the baseline — they
+do not overlap. On this gold set the router does beat "always answer human", and
+not only by luck of the point estimate.
+
+Two things keep that from being a strong claim. The margin at the pessimistic end
+of the interval is 1.2 points, and the interval is 15 points wide at n=80 — so
+the direction is solid and the exact figure is soft. The baseline is also
+computed from the same 80 messages rather than being an external constant, which
+makes this a useful comparison rather than a formal significance test.
+
+Macro-F1 and balanced accuracy remain the headlines regardless, because their
+baselines do not move with the class balance: 78% of this gold set is one class,
+and accuracy rewards a router for noticing that.
 
 `fraud_recall` and `auto_reply_precision` are perfect scores with no variance, so
 their bootstrap intervals collapse to a point and mean nothing. The honest bound
