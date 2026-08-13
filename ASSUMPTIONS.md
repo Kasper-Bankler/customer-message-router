@@ -1,15 +1,5 @@
 # Assumptions
 
-The case gave no business rules, so these are mine. Every one has a _because_,
-and every one is falsifiable — if a Danske Bank stakeholder disagrees with an
-assumption here, the system changes in a known place rather than everywhere.
-
-Last reviewed: 2026-08-09, against the finished implementation. Four assumptions
-are now contradicted or unfulfilled by what was built. They are recorded as
-written and the conflicts are listed at the foot of this file rather than edited
-away — an assumption quietly rewritten to match the code is not an assumption,
-it is a description.
-
 ## Data and scope
 
 1. **Banking77 messages are inbound written contacts** (secure inbox or chat
@@ -26,8 +16,7 @@ it is a description.
    knowledge of banking is untrusted, and a plausible answer sourced from
    pre-training is indistinguishable from a fabricated one at review time.
 
-4. **Banking77 is English-only, but Danske Bank is not.** The bank operates in
-   DA/SV/NO/FI/EN. Language is detected and non-English routed through the same
+4. **Banking77 is English-only** Language is detected and non-English routed through the same
    pipeline — this is a real production gap, not a solved problem, because
    Danish retrieval quality and CPR-number formats are untested here.
 
