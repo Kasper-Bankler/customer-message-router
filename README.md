@@ -1,4 +1,4 @@
-# Danske Bank — intelligent routing of customer messages
+# Intelligent routing of customer messages
 
 A multi-agent system that routes inbound customer messages (Banking77) to an
 auto-reply, an action proposal, or a human agent — and abstains, honestly, when
@@ -16,7 +16,7 @@ trace sink, the evaluation harness and the Streamlit demo all run end to end.
 Requires Python 3.11+ and [Ollama](https://ollama.com) running locally.
 
 ```bash
-git clone <this-repo> && cd danske-bank-routing
+git clone <this-repo> && cd customer-message-router
 python -m venv .venv && source .venv/bin/activate
 pip install -e .                    # installs dependencies and puts src/ on the path
 
