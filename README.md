@@ -15,8 +15,9 @@ trace sink, the evaluation harness and the Streamlit demo all run end to end.
 <img width="1301" height="469" alt="architecture" src="https://github.com/user-attachments/assets/6989acc1-2147-48ba-97c2-b26f9792d19a" />
 
 ## Demo video
+https://github.com/user-attachments/assets/08b2190b-6c83-4970-8ff4-005a68ba1a6a
 
-_Coming soon — a walkthrough of the five presets below._
+
 
 ## Quickstart
 
