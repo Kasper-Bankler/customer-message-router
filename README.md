@@ -11,6 +11,13 @@ resolution, the policy matrix, grounded replies behind two abstention gates, the
 deterministic output guard, dry-run tool proposals, human handoff, the JSONL
 trace sink, the evaluation harness and the Streamlit demo all run end to end.
 
+## Architecture
+<img width="1301" height="469" alt="architecture" src="https://github.com/user-attachments/assets/6989acc1-2147-48ba-97c2-b26f9792d19a" />
+
+## Demo video
+
+_Coming soon — a walkthrough of the five presets below._
+
 ## Quickstart
 
 Requires Python 3.11+ and [Ollama](https://ollama.com) running locally.
@@ -140,9 +147,9 @@ empty, emoji-only, non-English, distress and unanswerable questions.
 ## The five demo messages
 
 Each one proves something different. All five are one-click presets in the
-Streamlit app, and all five have been run — the fourth is deliberately _not_
-PLAN §13's "raise my card limit", which never reaches the action lane because
-Banking77 has no card-limit intent.
+Streamlit app, and each has been exercised end to end. Note the fourth message
+is deliberately not a card-limit request — Banking77 has no card-limit intent,
+so that message could never reach the action lane in the first place.
 
 | Message                                                      | Proves                                                                       |
 | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
@@ -181,7 +188,8 @@ that qualify.
 
 ## Reading order
 
-`ASSUMPTIONS.md` first — the business rules are mine, not the case's, and the
-architecture only makes sense in their light. Then `src/schemas.py`, which is the
-contract every module is written against. `DECISIONS.md` records the choices
-that could reasonably have gone the other way.
+`ASSUMPTIONS.md` first — the business rules are my own product decisions, not
+dictated by Banking77 or an external spec, and the architecture only makes sense
+in their light. Then `src/schemas.py`, which is the contract every module is
+written against. `DECISIONS.md` records the choices that could reasonably have
+gone the other way.
